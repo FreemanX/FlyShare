@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
@@ -111,6 +112,7 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fpv);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mVideoSurface = (TextureView) findViewById(R.id.FPV_textureView);
         if (mVideoSurface != null)
             mVideoSurface.setSurfaceTextureListener(this);
@@ -224,6 +226,7 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
 
         if (mProduct != null && mProduct instanceof DJIAircraft) {
             mFlightController = ((DJIAircraft) mProduct).getFlightController();
+            if (mFlightController == null) return;
             mFlightController.setUpdateSystemStateCallback(new DJIFlightControllerDelegate.FlightControllerUpdateSystemStateCallback() {
                 @Override
                 public void onResult(DJIFlightControllerDataType.DJIFlightControllerCurrentState djiFlightControllerCurrentState) {
@@ -260,8 +263,9 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
 
     private void setCameraMode(int cameraMode) // 0 for photo, 1 for video, 2 for Playback, 3 for MediaDownload, 4 for Unknown
     {
+        mCamera = mProduct.getCamera();
+        if (mCamera == null) return;
         if (cameraMode == 0) {
-            mCamera = mProduct.getCamera();
             mCamera.setCameraMode(CameraMode.ShootPhoto, new DJICompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
@@ -415,6 +419,7 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
 
     private void stopRecord() {
         mCamera = mProduct.getCamera();
+        if (mCamera == null) return;
         mCamera.stopRecordVideo(new DJICompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
@@ -529,8 +534,8 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
     protected void onDestroy() {
         Log.e(TAG, "onDestroy");
         uninitPreviewer();
-
-        unregisterReceiver(mReceiver);
+        if (mReceiver.isOrderedBroadcast() || mReceiver.isInitialStickyBroadcast())
+            unregisterReceiver(mReceiver);
 
         super.onDestroy();
     }
