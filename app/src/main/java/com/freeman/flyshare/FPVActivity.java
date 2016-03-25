@@ -1,13 +1,18 @@
 package com.freeman.flyshare;
 
-import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -17,6 +22,8 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -37,10 +44,11 @@ import dji.sdk.base.DJIError;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraMode;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraShootPhotoMode;
 
-public class FPVActivity extends Activity implements View.OnClickListener, TextureView.SurfaceTextureListener {
+public class FPVActivity extends AppCompatActivity implements View.OnClickListener, TextureView.SurfaceTextureListener {
     String TAG = "FPVActivity";
     boolean isPhotoMode = true;
-    ImageButton changeCamModeIB, previewIB, camSettingIB;
+    boolean cameraConfigIsShow = false;
+    ImageButton changeCamModeIB, shootModeIB, camSettingIB;
     Button takePhotoBtn;
     ToggleButton takeVideoBtn;
     LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout;
@@ -122,7 +130,8 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
             setCameraMode(0);
             setCameraMode(0);
         }
-        initCameraFunctions(); // initUI
+        /*---------------------------------UI init----------------------------------*/
+        initCameraFunctions();
         initStatusBar();
         initRecordVideoBar();
 
@@ -184,18 +193,26 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
                 if (isChecked) {
                     // The toggle is enabled
                     recordAction();
-                    showToast("Start to record");
                 } else {
                     // The toggle is disabled
-                    showToast("Stop record");
                     stopRecord();
                 }
             }
         });
-        previewIB = (ImageButton) findViewById(R.id.cameraPreview);
-        previewIB.setOnClickListener(this);
         camSettingIB = (ImageButton) findViewById(R.id.cameraConfig);
-        camSettingIB.setOnClickListener(this);
+        camSettingIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showToast("Camera Config clicked");
+                if (!cameraConfigIsShow)
+                    showCameraConfig();
+                else
+                    hideCameraConfig();
+            }
+        });
+
+        shootModeIB = (ImageButton) findViewById(R.id.shootingMode);
+        shootModeIB.setOnClickListener(this);
     }
 
     @Override
@@ -220,6 +237,23 @@ public class FPVActivity extends Activity implements View.OnClickListener, Textu
             default:
                 break;
         }
+    }
+
+    private void hideCameraConfig() {
+        Fragment fragment = getFragmentManager().findFragmentByTag("CameraConfig");
+        if (fragment != null) {
+            getFragmentManager().beginTransaction().remove(fragment).commit();
+            cameraConfigIsShow = false;
+        }
+    }
+
+    private void showCameraConfig() {
+        FragmentManager mManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = mManager.beginTransaction();
+        CameraConfigFragment cameraConfigFragment = CameraConfigFragment.getCameraConfigFragment();
+        fragmentTransaction.add(R.id.cameraConfigFragment, cameraConfigFragment, "CameraConfig");
+        fragmentTransaction.commit();
+        cameraConfigIsShow = true;
     }
 
     private void updateFlightControllerStatus() {

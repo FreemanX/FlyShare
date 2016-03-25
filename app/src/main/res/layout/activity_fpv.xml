@@ -12,6 +12,7 @@
         android:layout_centerInParent="true"
         android:layout_gravity="center" />
 
+
     <LinearLayout
         android:id="@+id/cameraFunctions"
         android:layout_width="wrap_content"
@@ -20,8 +21,8 @@
         android:layout_below="@+id/statusBar"
         android:layout_centerVertical="true"
         android:layout_gravity="center"
-        android:layout_marginTop="10dp"
         android:layout_marginBottom="20dp"
+        android:layout_marginTop="10dp"
         android:background="#ad353535"
         android:gravity="center"
         android:orientation="vertical"
@@ -106,24 +107,25 @@
             android:theme="@style/AppTheme"
             android:visibility="gone" />
 
-
         <ImageButton
-            android:id="@+id/cameraPreview"
+            android:id="@+id/cameraConfig"
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_marginTop="20dp"
             android:background="#898989"
             android:clickable="true"
-            android:src="@mipmap/ic_preview_button" />
+            android:src="@mipmap/ic_adjust" />
 
         <ImageButton
-            android:id="@+id/cameraConfig"
+            android:id="@+id/shootingMode"
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_marginTop="2.5dp"
             android:background="#898989"
             android:clickable="true"
-            android:src="@mipmap/ic_adjust" />
+            android:src="@mipmap/ic_camera_mode" />
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -297,8 +299,7 @@
             android:layout_width="15dp"
             android:layout_height="15dp"
             android:layout_marginTop="2dp"
-            android:src="@mipmap/ic_recording_dot"
-            />
+            android:src="@mipmap/ic_recording_dot" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -319,5 +320,14 @@
 
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cameraConfigFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/recordVideoBar"
+        android:layout_marginTop="80dp"
+        android:layout_toStartOf="@+id/cameraFunctions"
+        android:orientation="vertical"></LinearLayout>
 
 </RelativeLayout>
