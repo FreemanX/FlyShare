@@ -5,13 +5,11 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.TextureView;
@@ -22,8 +20,6 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioGroup;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -32,6 +28,7 @@ import dji.sdk.AirLink.DJILBAirLink.DJIOnReceivedVideoCallback;
 import dji.sdk.Battery.DJIBattery;
 import dji.sdk.Camera.DJICamera;
 import dji.sdk.Camera.DJICamera.CameraReceivedVideoDataCallback;
+import dji.sdk.Camera.DJICameraSettingsDef;
 import dji.sdk.Codec.DJICodecManager;
 import dji.sdk.Products.DJIAircraft;
 import dji.sdk.FlightController.DJIFlightController;
@@ -46,16 +43,17 @@ import dji.sdk.Camera.DJICameraSettingsDef.CameraShootPhotoMode;
 
 public class FPVActivity extends AppCompatActivity implements View.OnClickListener, TextureView.SurfaceTextureListener {
     String TAG = "FPVActivity";
-    boolean isPhotoMode = true;
-    boolean cameraConfigIsShow = false;
-    ImageButton changeCamModeIB, shootModeIB, camSettingIB;
-    Button takePhotoBtn;
-    ToggleButton takeVideoBtn;
-    LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout;
-    TextView altTV, modeTV, connectionTV, powerTV, satlTV, recordTimeTV;
-    ImageView videoDot;
+    private boolean isPhotoMode = true;
+    private boolean cameraConfigIsShow = false;
+    private ImageButton changeCamModeIB, shootModeIB, camSettingIB;
+    private Button takePhotoBtn;
+    private ToggleButton takeVideoBtn;
+    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout;
+    private TextView altTV, modeTV, connectionTV, powerTV, satlTV, recordTimeTV;
+    private ImageView videoDot;
 
     private DJIFlightController mFlightController;
+    private boolean isRecording = false;
     protected CameraReceivedVideoDataCallback mReceivedVideoDataCallBack = null;
     protected DJIOnReceivedVideoCallback mOnReceivedVideoCallback = null;
 
@@ -116,6 +114,28 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         return isConnected;
     }
 
+    private void initDroneState() {
+        stopRecord();
+        setCameraMode(0);
+        setCameraMode(0);
+        mProduct.getCamera().setExposureMode(DJICameraSettingsDef.CameraExposureMode.Program, new DJICompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError != null)
+                    Log.e("FPVActivity", "initDroneState set exposure mode failed: " + djiError.getDescription());
+            }
+        });
+
+        mProduct.getCamera().setExposureCompensation(DJICameraSettingsDef.CameraExposureCompensation.N_0_0, new DJICompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError != null)
+                    Log.e("FPVActivity", "initDroneState setExposureCompensation failed: " + djiError.getDescription());
+            }
+        });
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,9 +146,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             mVideoSurface.setSurfaceTextureListener(this);
         mProduct = FlyShareApplication.getProductInstance();
         if (mProduct != null) {
-            stopRecord();
-            setCameraMode(0);
-            setCameraMode(0);
+            initDroneState();
         }
         /*---------------------------------UI init----------------------------------*/
         initCameraFunctions();
@@ -242,18 +260,25 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     private void hideCameraConfig() {
         Fragment fragment = getFragmentManager().findFragmentByTag("CameraConfig");
         if (fragment != null) {
-            getFragmentManager().beginTransaction().remove(fragment).commit();
+            getFragmentManager().beginTransaction().hide(fragment).commit();
             cameraConfigIsShow = false;
         }
     }
 
     private void showCameraConfig() {
-        FragmentManager mManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = mManager.beginTransaction();
-        CameraConfigFragment cameraConfigFragment = CameraConfigFragment.getCameraConfigFragment();
-        fragmentTransaction.add(R.id.cameraConfigFragment, cameraConfigFragment, "CameraConfig");
-        fragmentTransaction.commit();
+        if (isRecording) return;
+        Fragment fragment = getFragmentManager().findFragmentByTag("CameraConfig");
+        if (fragment == null) {
+            FragmentManager mManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = mManager.beginTransaction();
+            CameraConfigFragment cameraConfigFragment = CameraConfigFragment.getCameraConfigFragment();
+            fragmentTransaction.add(R.id.cameraConfigFragment, cameraConfigFragment, "CameraConfig");
+            fragmentTransaction.commit();
+        } else {
+            getFragmentManager().beginTransaction().show(fragment).commit();
+        }
         cameraConfigIsShow = true;
+
     }
 
     private void updateFlightControllerStatus() {
@@ -399,7 +424,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             showToast(getString(R.string.disconnected));
         } else {
 
-
             if (null != mVideoSurface) {
                 mVideoSurface.setSurfaceTextureListener(this);
             }
@@ -458,12 +482,12 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             @Override
             public void onResult(DJIError djiError) {
                 if (djiError == null) {
-                    showToast("Video recording stopped");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             videoDot.setVisibility(View.GONE);
                             recordTimeTV.setText("00:00");
+                            setIsRecording(false);
                         }
                     });
                 } else {
@@ -487,7 +511,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                         @Override
                         public void onResult(DJIError djiError) {
                             if (djiError == null) {
-                                showToast("Start recording success!");
+                                setIsRecording(true);
                                 handlerTimer.postDelayed(runnable, TIME);
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -555,7 +579,8 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     @Override
     public void onStop() {
         Log.e(TAG, "onStop");
-        unregisterReceiver(mReceiver);
+        if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
+            unregisterReceiver(mReceiver);
         super.onStop();
     }
 
@@ -574,4 +599,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         super.onDestroy();
     }
 
+    public void setIsRecording(boolean isRecording) {
+        this.isRecording = isRecording;
+    }
 }

@@ -325,8 +325,8 @@
         android:id="@+id/cameraConfigFragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/recordVideoBar"
-        android:layout_marginTop="80dp"
+        android:layout_below="@+id/statusBar"
+        android:layout_marginTop="190dp"
         android:layout_toStartOf="@+id/cameraFunctions"
         android:orientation="vertical"></LinearLayout>
 

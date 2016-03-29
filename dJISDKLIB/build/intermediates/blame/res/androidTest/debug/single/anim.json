@@ -4,12 +4,12 @@
         "source": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\bundles\\debug\\res\\anim\\core_hold.xml"
     },
     {
-        "merged": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\res\\merged\\androidTest\\debug\\anim\\core_zoom_enter_back.xml",
-        "source": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\bundles\\debug\\res\\anim\\core_zoom_enter_back.xml"
-    },
-    {
         "merged": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\res\\merged\\androidTest\\debug\\anim\\core_push_left_in.xml",
         "source": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\bundles\\debug\\res\\anim\\core_push_left_in.xml"
+    },
+    {
+        "merged": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\res\\merged\\androidTest\\debug\\anim\\core_zoom_enter_back.xml",
+        "source": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\bundles\\debug\\res\\anim\\core_zoom_enter_back.xml"
     },
     {
         "merged": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\res\\merged\\androidTest\\debug\\anim\\core_push_right_out.xml",
