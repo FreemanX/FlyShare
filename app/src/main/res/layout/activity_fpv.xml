@@ -5,13 +5,25 @@
     android:layout_height="match_parent"
     tools:context="com.freeman.flyshare.FPVActivity">
 
-    <TextureView
-        android:id="@+id/FPV_textureView"
+    <LinearLayout
+        android:id="@+id/main_window"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:layout_gravity="center" />
+        android:orientation="horizontal">
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/small_window"
+        android:layout_width="250dp"
+        android:layout_height="150dp"
+        android:layout_alignBottom="@+id/main_window"
+        android:orientation="horizontal"
+        android:background="#ab9a9a9a"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="5dp">
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/cameraFunctions"
