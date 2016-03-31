@@ -22,6 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import dji.sdk.Battery.DJIBattery;
 import dji.sdk.Camera.DJICamera;
 import dji.sdk.Camera.DJICameraSettingsDef;
@@ -54,6 +57,10 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     private DJIBaseProduct mProduct = null;
     private DJICamera mCamera = null;
 
+    public interface OnReceiverReceiveListener {
+        public void onReceiverReceive();
+    }
+
     private int i = 0;
     private int TIME = 1000;
     private Handler handlerTimer = new Handler();
@@ -80,9 +87,11 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            OnReceiverReceiveListener fpvFragment = (OnReceiverReceiveListener) getSupportFragmentManager().findFragmentByTag(DJIFPVFragment.class.getName());
+            if (fpvFragment != null)
+                fpvFragment.onReceiverReceive();
             checkConnectionStatus();
         }
-
     };
 
     private boolean checkConnectionStatus() {
@@ -134,7 +143,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fpv);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
+        Log.e("FPVActivity", "==================>> onCreate!");
         mProduct = FlyShareApplication.getProductInstance();
         fragmentManager = getSupportFragmentManager();
 
@@ -325,8 +334,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (mProduct != null && mProduct instanceof DJIAircraft) {
             mFlightController = ((DJIAircraft) mProduct).getFlightController();
             if (mFlightController == null) return;
-
-            Log.e("updateStatus", "Updating status called! ");
             mFlightController.setUpdateSystemStateCallback(new DJIFlightControllerDelegate.FlightControllerUpdateSystemStateCallback() {
                 @Override
                 public void onResult(DJIFlightControllerDataType.DJIFlightControllerCurrentState djiFlightControllerCurrentState) {
@@ -334,8 +341,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                     float alt = threedee.getAltitude();
                     String mode = djiFlightControllerCurrentState.getFlightModeString();
                     double satl = djiFlightControllerCurrentState.getSatelliteCount();
-                    Log.e("updateStatus", "setUpdateSystemStateCallback called! " + Float.toString(alt) + ", " +
-                            mode + ", " + Double.toString(satl));
                     updateFlightControllerStatusUI(alt, mode, satl);
                 }
             });
@@ -517,42 +522,57 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         });
     }
 
+    private Timer mTimer;
+
+    class UpdateFlightControllerTask extends TimerTask {
+        @Override
+        public void run() {
+            updateFlightControllerStatus();
+        }
+    }
+
+
     @Override
     public void onResume() {
         Log.e(TAG, "onResume");
+        UpdateFlightControllerTask updateFlightControllerTask = new UpdateFlightControllerTask();
+        mTimer = new Timer();
+//        mTimer.schedule(updateFlightControllerTask, 0, 500);
         super.onResume();
-        updateFlightControllerStatus();
     }
 
     @Override
     public void onRestart() {
-        super.onRestart();
+        Log.e("FPVActivity", "==================>> onRestart!");
         IntentFilter filter = new IntentFilter();
         filter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
             unregisterReceiver(mReceiver);
         registerReceiver(mReceiver, filter);
+        super.onRestart();
     }
 
     @Override
     public void onPause() {
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
             unregisterReceiver(mReceiver);
-        Log.e(TAG, "onPause");
+        Log.e("FPVActivity", "==================>> onPause!");
+        mTimer.cancel();
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        Log.e(TAG, "onStop");
-        if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
-            unregisterReceiver(mReceiver);
+        Log.e(TAG, "==================>> onStop");
+        mTimer.cancel();
+
+        unregisterReceiver(mReceiver);
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy");
+        Log.e(TAG, "==================>> onDestroy");
         if (mReceiver.isOrderedBroadcast() || mReceiver.isInitialStickyBroadcast())
             unregisterReceiver(mReceiver);
         super.onDestroy();

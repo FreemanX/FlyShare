@@ -100,8 +100,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     class SmallMapTask extends TimerTask {
         @Override
         public void run() {
-            if (homeLat == 0 || homeLat == 0 || currentLng == 0 || currentLat == 0)
-                updateDroneInfo();
+            if (getActivity() == null) return;
+            updateDroneInfo();
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -115,8 +115,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     class BigMapTask extends TimerTask {
         @Override
         public void run() {
-            if (homeLat == 0 || homeLat == 0 || currentLng == 0 || currentLat == 0)
-                updateDroneInfo();
+            updateDroneInfo();
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -169,18 +168,14 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private void updateDroneInfo() {
         mProduct = FlyShareApplication.getProductInstance();
         if (mProduct != null && mProduct instanceof DJIAircraft) {
-            final DJIFlightController djiFlightController = ((DJIAircraft) mProduct).getFlightController();
-            djiFlightController.setUpdateSystemStateCallback(new DJIFlightControllerDelegate.FlightControllerUpdateSystemStateCallback() {
-                @Override
-                public void onResult(DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState) {
-                    DJIFlightControllerDataType.DJILocationCoordinate3D currentLocation = currentState.getAircraftLocation();
-                    currentLat = currentLocation.getLatitude();
-                    currentLng = currentLocation.getLongitude();
-                    homeLat = currentState.getHomeLocation().getLatitude();
-                    homeLng = currentState.getHomeLocation().getLongitude();
-                    droneHeading = djiFlightController.getCompass().getHeading();
-                }
-            });
+            DJIFlightController djiFlightController = ((DJIAircraft) mProduct).getFlightController();
+            DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState = djiFlightController.getCurrentState();
+            DJIFlightControllerDataType.DJILocationCoordinate3D currentLocation = currentState.getAircraftLocation();
+            currentLat = currentLocation.getLatitude();
+            currentLng = currentLocation.getLongitude();
+            homeLat = currentState.getHomeLocation().getLatitude();
+            homeLng = currentState.getHomeLocation().getLongitude();
+            droneHeading = djiFlightController.getCompass().getHeading();
         }
     }
 

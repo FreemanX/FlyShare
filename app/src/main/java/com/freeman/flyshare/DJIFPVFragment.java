@@ -1,9 +1,6 @@
 package com.freeman.flyshare;
 
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
@@ -19,17 +16,9 @@ import dji.sdk.Camera.DJICamera;
 import dji.sdk.Codec.DJICodecManager;
 import dji.sdk.base.DJIBaseProduct;
 
-public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextureListener {
+public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextureListener, FPVActivity.OnReceiverReceiveListener {
     private final String TAG = "DJIFPVFragment";
     protected TextureView mVideoSurface = null;
-    private static DJIFPVFragment djifpvFragment = null;
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            initPreviewer();
-        }
-    };
-
     protected DJICamera.CameraReceivedVideoDataCallback mReceivedVideoDataCallBack = null;
     protected DJILBAirLink.DJIOnReceivedVideoCallback mOnReceivedVideoCallback = null;
 
@@ -68,9 +57,6 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
         IntentFilter filter = new IntentFilter();
         filter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
 
-        if (this.mReceiver.isInitialStickyBroadcast() || this.mReceiver.isOrderedBroadcast())
-            getActivity().unregisterReceiver(this.mReceiver);
-        getActivity().registerReceiver(this.mReceiver, filter);
 
         mReceivedVideoDataCallBack = new DJICamera.CameraReceivedVideoDataCallback() {
             @Override
@@ -90,12 +76,10 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
                 }
             }
         };
-        Log.e("FPVonCreateView", "===================>> View created! ");
         return FPVView;
     }
 
     private void initPreviewer() {
-        Log.e("FPVonCreateView", "===================>> initPreviewer! ");
         try {
             mProduct = FlyShareApplication.getProductInstance();
         } catch (Exception exception) {
@@ -106,7 +90,6 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
             mCamera = null;
         } else {
             if (null != mVideoSurface) {
-                Log.e("FPVonCreateView", "===================>> null != mVideoSurface ");
                 mVideoSurface.setSurfaceTextureListener(this);
             }
 
@@ -187,6 +170,7 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         if (mCodecManager != null) {
             mCodecManager.cleanSurface();
+            mCodecManager.destroyCodec();
             mCodecManager = null;
         }
         return false;
@@ -217,9 +201,6 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
     @Override
     public void onStop() {
         Log.e(TAG, "onStop");
-        mCodecManager.destroyCodec();
-        if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
-            getActivity().unregisterReceiver(mReceiver);
         super.onStop();
     }
 
@@ -227,10 +208,11 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
     public void onDestroy() {
         Log.e(TAG, "onDestroy");
         uninitPreviewer();
-        if (mReceiver.isOrderedBroadcast() || mReceiver.isInitialStickyBroadcast())
-            getActivity().unregisterReceiver(mReceiver);
-
         super.onDestroy();
     }
 
+    @Override
+    public void onReceiverReceive() {
+        initPreviewer();
+    }
 }
