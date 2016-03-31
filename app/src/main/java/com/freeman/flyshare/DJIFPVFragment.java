@@ -22,7 +22,7 @@ import dji.sdk.base.DJIBaseProduct;
 public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextureListener {
     private final String TAG = "DJIFPVFragment";
     protected TextureView mVideoSurface = null;
-
+    private static DJIFPVFragment djifpvFragment = null;
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -43,9 +43,7 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
 
     public static DJIFPVFragment getDJIFPVFragment() {
         DJIFPVFragment fragment = new DJIFPVFragment();
-        Bundle args = new Bundle();
 
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -219,6 +217,7 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
     @Override
     public void onStop() {
         Log.e(TAG, "onStop");
+        mCodecManager.destroyCodec();
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
             getActivity().unregisterReceiver(mReceiver);
         super.onStop();

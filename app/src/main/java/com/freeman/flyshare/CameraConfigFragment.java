@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dji.sdk.Camera.DJICamera;
+import dji.sdk.Camera.DJICameraParameters;
 import dji.sdk.Camera.DJICameraSettingsDef;
 import dji.sdk.Products.DJIAircraft;
 import dji.sdk.base.DJIBaseComponent;
@@ -354,6 +355,7 @@ public class CameraConfigFragment extends Fragment {
         cameraModeRG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (FlyShareApplication.getProductInstance() == null) return;
                 if (checkedId == R.id.camera_mode_auto_radioButton) {
                     getDJICamera().setExposureMode(DJICameraSettingsDef.CameraExposureMode.Program, new DJIBaseComponent.DJICompletionCallback() {
                         @Override
@@ -401,7 +403,7 @@ public class CameraConfigFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 ISOValueTV.setTextColor(defaultTextColor);
-
+                if (FlyShareApplication.getProductInstance() == null) return;
                 if (currentISO.equals(cameraISOs[0]) || seekBar.getProgress() == 0) {
                     getDJICamera().setExposureMode(DJICameraSettingsDef.CameraExposureMode.ShutterPriority, new DJIBaseComponent.DJICompletionCallback() {
                         @Override
@@ -471,6 +473,7 @@ public class CameraConfigFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 shutterValueTV.setTextColor(defaultTextColor);
+                if (FlyShareApplication.getProductInstance() == null) return;
                 getDJICamera().setShutterSpeed(currentShutterSpeed, new DJIBaseComponent.DJICompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {

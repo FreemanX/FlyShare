@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -12,7 +11,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -41,11 +39,12 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     String TAG = "FPVActivity";
     public static FragmentManager fragmentManager;
     public boolean isPhotoMode = true;
+    public static boolean FPVIsSmall = false;
     private boolean cameraConfigIsShow = false;
-    private ImageButton changeCamModeIB, shootModeIB, camSettingIB;
+    private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB;
     private Button takePhotoBtn;
     private ToggleButton takeVideoBtn;
-    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout;
+    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout;
     private TextView altTV, modeTV, connectionTV, powerTV, satlTV, recordTimeTV;
     private ImageView videoDot;
 
@@ -94,6 +93,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 connectionTV.setTextColor(getResources().getColor(R.color.colorGreen));
                 connectionTV.setText(mProduct.getModel().toString());
                 updateFlightControllerStatus();
+//                showMapFragment();
                 isConnected = true;
             }
         }
@@ -101,10 +101,10 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (!isConnected) {
             connectionTV.setTextColor(getResources().getColor(R.color.colorAccent));
             connectionTV.setText("Disconnected");
+//            fragmentManager.beginTransaction().remove(fragmentManager.findFragmentByTag(GoogleMapsFragment.class.getName())).commit();
 //            this.finish();
 //            System.exit(0);
         }
-
         return isConnected;
     }
 
@@ -127,7 +127,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                     Log.e("FPVActivity", "initDroneState setExposureCompensation failed: " + djiError.getDescription());
             }
         });
-
     }
 
     @Override
@@ -146,10 +145,26 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             initDroneState();
         }
         /*---------------------------------UI init----------------------------------*/
+        smallFragmentLayout = (LinearLayout) findViewById(R.id.small_window);
+
+        swapViewIB = (ImageButton) findViewById(R.id.swap_button);
+        swapViewIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("swapViewIB", "================== >>> OnClickListener");
+                if (FPVIsSmall) {
+                    FPVIsSmall = false;
+                    setFPVFragmentLarge(true);
+                } else {
+                    FPVIsSmall = true;
+                    setFPVFragmentLarge(false);
+                }
+            }
+        });
+
         initCameraFunctions();
         initStatusBar();
         initRecordVideoBar();
-
 
         checkConnectionStatus();
 
@@ -242,6 +257,24 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (fragment != null) {
             getSupportFragmentManager().beginTransaction().hide(fragment).commit();
             cameraConfigIsShow = false;
+        }
+    }
+
+    private void setFPVFragmentLarge(boolean isLarge) {
+        GoogleMapsFragment mapsFragment = (GoogleMapsFragment) getSupportFragmentManager().findFragmentByTag(GoogleMapsFragment.class.getName());
+        DJIFPVFragment djifpvFragment = (DJIFPVFragment) getSupportFragmentManager().findFragmentByTag(DJIFPVFragment.class.getName());
+        getSupportFragmentManager().beginTransaction().remove(mapsFragment);
+        getSupportFragmentManager().beginTransaction().remove(djifpvFragment);
+        mapsFragment = GoogleMapsFragment.getGoogleMapsFragment();
+        djifpvFragment = DJIFPVFragment.getDJIFPVFragment();
+        if (isLarge) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_window, djifpvFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.small_window, mapsFragment).commit();
+//            camFunctionsLayout.setVisibility(View.VISIBLE);
+        } else {
+            getSupportFragmentManager().beginTransaction().replace(R.id.small_window, djifpvFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_window, mapsFragment).commit();
+//            camFunctionsLayout.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -491,11 +524,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
             unregisterReceiver(mReceiver);
         super.onStop();
-    }
-
-    public void onReturn(View view) {
-        Log.e(TAG, "onReturn");
-        this.finish();
     }
 
     @Override

@@ -40,15 +40,15 @@ import dji.sdk.base.DJIBaseProduct;
 public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
 
     private Timer mTimer;
-    private TimerTask mTaskSmallWindow;
-    boolean locationInited = false;
+    private TimerTask mTask;
     MapView mMapView;
     private GoogleMap mMap;
     private SupportMapFragment mapFragment;
-    double currentLat, currentLng, homeLat, homeLng;
+    double currentLat, currentLng, homeLat, homeLng, droneHeading;
     private Marker droneMarker, homeMarker;
     private MarkerOptions droneMarkerOptions, homeMarkerOptions;
     private Polyline home2Drone = null;
+    private static GoogleMapsFragment googleMapsFragment = null;
 
     DJIBaseProduct mProduct;
 
@@ -81,7 +81,10 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
         droneMarkerOptions = new MarkerOptions();
         droneMarkerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_drone));
+        droneMarkerOptions.anchor(0.5f, 0.5f).rotation(-90f);
+
         homeMarkerOptions = new MarkerOptions();
+        homeMarkerOptions.anchor(0.5f, 0.7f);
         homeMarkerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_home));
 
         try {
@@ -94,26 +97,34 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         return view;
     }
 
+    class SmallMapTask extends TimerTask {
+        @Override
+        public void run() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    drawDroneHomeOnMap();
+                    cameraUpdate(false);
+                }
+            });
+        }
+    }
+
+    class BigMapTask extends TimerTask {
+        @Override
+        public void run() {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    drawDroneHomeOnMap();
+                }
+            });
+        }
+    }
+
     @Override
     public void onActivityCreated(Bundle bundle) {
         super.onActivityCreated(bundle);
-        mTimer = new Timer();
-        class Task extends TimerTask {
-            @Override
-            public void run() {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        drawDroneHomeOnMap();
-                        cameraUpdate();
-                    }
-                });
-            }
-        }
-        mTaskSmallWindow = new Task();
-        mTimer.schedule(mTaskSmallWindow, 0, 500);
-        mTaskSmallWindow.run();
-
     }
 
 
@@ -126,9 +137,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnMarkerClickListener(this);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(!FPVActivity.FPVIsSmall);
         mMap.getUiSettings().setCompassEnabled(true);
-        mMap.getUiSettings().setAllGesturesEnabled(false);
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -137,26 +147,25 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-        mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
-//                updateDroneInfo();
                 drawDroneHomeOnMap();
-                cameraUpdate();
+                cameraUpdate(true);
                 return true;
             }
         });
+        mMap.getUiSettings().setAllGesturesEnabled(FPVActivity.FPVIsSmall);
         updateDroneInfo();
         drawDroneHomeOnMap();
-        cameraUpdate();
+        cameraUpdate(true);
     }
 
     private void updateDroneInfo() {
         mProduct = FlyShareApplication.getProductInstance();
         if (mProduct != null && mProduct instanceof DJIAircraft) {
-            DJIFlightController djiFlightController = ((DJIAircraft) mProduct).getFlightController();
+            final DJIFlightController djiFlightController = ((DJIAircraft) mProduct).getFlightController();
             djiFlightController.setUpdateSystemStateCallback(new DJIFlightControllerDelegate.FlightControllerUpdateSystemStateCallback() {
                 @Override
                 public void onResult(DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState) {
@@ -165,20 +174,23 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
                     currentLng = currentLocation.getLongitude();
                     homeLat = currentState.getHomeLocation().getLatitude();
                     homeLng = currentState.getHomeLocation().getLongitude();
+                    droneHeading = djiFlightController.getCompass().getHeading();
                 }
             });
         }
     }
 
+
     private void drawDroneHomeOnMap() {
-        double offset = 0.0001;
+
         LatLng currentPosition = new LatLng(currentLat, currentLng);
-        droneMarkerOptions.position(new LatLng(currentLat - offset * 2, currentLng));
+        droneMarkerOptions.position(currentPosition).rotation((float) (-90f + droneHeading));
 
         LatLng home = new LatLng(homeLat, homeLng);
-        homeMarkerOptions.position(new LatLng(homeLat - offset, homeLng));
+        homeMarkerOptions.position(home);
 
         final PolylineOptions polylineOptions = new PolylineOptions().add(home, currentPosition).width(3).color(Color.RED);
+
 
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -217,8 +229,12 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         });
     }
 
-    private void cameraUpdate() {
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 17);
+    private void cameraUpdate(boolean isZoomed) {
+        CameraUpdate cameraUpdate;
+        if (isZoomed)
+            cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLng), 17);
+        else
+            cameraUpdate = CameraUpdateFactory.newLatLng(new LatLng(currentLat, currentLng));
         try {
             mMap.moveCamera(cameraUpdate);
         } catch (NullPointerException e) {
@@ -226,4 +242,22 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         }
     }
 
+    @Override
+    public void onStop() {
+        mTask.cancel();
+        Log.e("GoogleMapsFragment", "onResume()");
+        super.onStop();
+    }
+
+    @Override
+    public void onResume() {
+        Log.e("GoogleMapsFragment", "onResume()");
+        mTimer = new Timer();
+        if (FPVActivity.FPVIsSmall)
+            mTask = new BigMapTask();
+        else
+            mTask = new SmallMapTask();
+        mTimer.schedule(mTask, 0, 400);
+        super.onResume();
+    }
 }

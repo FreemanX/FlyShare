@@ -9,32 +9,112 @@
         android:id="@+id/main_window"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/statusBar"
+        android:layout_marginTop="-6dp"
         android:orientation="horizontal">
 
     </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/small_window"
         android:layout_width="250dp"
         android:layout_height="150dp"
         android:layout_alignBottom="@+id/main_window"
-        android:orientation="horizontal"
-        android:background="#ab9a9a9a"
+        android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginBottom="5dp">
+        android:background="#ab9a9a9a"
+        android:orientation="horizontal">
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/mission_window"
+        android:layout_width="620dp"
+        android:layout_height="100dp"
+        android:layout_below="@+id/cameraFunctions"
+        android:layout_marginLeft="350dp"
+        android:background="#ad353535"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Follow Me"
+            android:id="@+id/follow_me_button"
+            android:background="#ad353535"
+            android:textColor="#d8ffffff"
+            android:layout_margin="5dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Hot Point"
+            android:id="@+id/hot_point_button"
+            android:background="#ad353535"
+            android:textColor="#d8ffffff"
+            android:layout_margin="5dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Panorama"
+            android:id="@+id/panorama_button"
+            android:background="#ad353535"
+            android:textColor="#d8ffffff"
+            android:layout_margin="5dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Your Mission"
+            android:id="@+id/waypoint_button"
+            android:background="#ad353535"
+            android:textColor="#d8ffffff"
+            android:layout_margin="5dp" />
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/takeoff_button"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_above="@+id/landing_button"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="5dp"
+        android:background="@mipmap/ic_take_off" />
+
+    <ImageButton
+        android:id="@+id/landing_button"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_above="@+id/swap_button"
+        android:layout_marginBottom="70dp"
+        android:layout_marginLeft="5dp"
+        android:background="@mipmap/ic_landing" />
+
+    <ImageButton
+        android:id="@+id/swap_button"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_above="@+id/small_window"
+        android:layout_marginBottom="-30dp"
+        android:layout_marginLeft="10dp"
+        android:background="@mipmap/ic_swap" />
+
+    <LinearLayout
         android:id="@+id/cameraFunctions"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/statusBar"
         android:layout_centerVertical="true"
         android:layout_gravity="center"
         android:layout_marginBottom="20dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="87dp"
         android:background="#ad353535"
         android:gravity="center"
         android:orientation="vertical"
@@ -63,6 +143,7 @@
                 android:id="@+id/camera_mode_imageButton"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:layout_marginTop="20dp"
                 android:layout_weight="1"
                 android:background="#00ffffff"
                 android:clickable="true"
@@ -132,6 +213,7 @@
             android:id="@+id/shootingMode"
             android:layout_width="80dp"
             android:layout_height="40dp"
+            android:layout_marginBottom="20dp"
             android:layout_marginTop="2.5dp"
             android:background="#898989"
             android:clickable="true"
@@ -341,5 +423,6 @@
         android:layout_marginTop="190dp"
         android:layout_toStartOf="@+id/cameraFunctions"
         android:orientation="vertical"></LinearLayout>
+
 
 </RelativeLayout>
