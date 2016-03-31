@@ -2,13 +2,16 @@ package com.freeman.flyshare;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +24,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,13 +45,13 @@ import dji.sdk.base.DJIError;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraMode;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraShootPhotoMode;
 
-public class FPVActivity extends AppCompatActivity implements View.OnClickListener {
+public class FPVActivity extends AppCompatActivity implements View.OnClickListener, MissionSelectionFragment.OnFragmentInteractionListener {
     String TAG = "FPVActivity";
     public static FragmentManager fragmentManager;
     public boolean isPhotoMode = true;
     public static boolean FPVIsSmall = false;
     private boolean cameraConfigIsShow = false;
-    private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB;
+    private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB, takeOffButton, landingButton;
     private Button takePhotoBtn;
     private ToggleButton takeVideoBtn;
     private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout, missionWindownLayout;
@@ -56,9 +63,40 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     private DJIBaseProduct mProduct = null;
     private DJICamera mCamera = null;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
+    @Override
+    public void onMissionTypeSelected(int i) {
+        showToast("Mission type " + Integer.toString(i));
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "FPV Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.freeman.flyshare/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
 
     public interface OnReceiverReceiveListener {
-        public void onReceiverReceive();
+        void onReceiverReceive();
     }
 
     private int i = 0;
@@ -169,6 +207,20 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 }
             }
         });
+        takeOffButton = (ImageButton) findViewById(R.id.takeoff_button);
+        takeOffButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAlertDialog(true);
+            }
+        });
+        landingButton = (ImageButton) findViewById(R.id.landing_button);
+        landingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAlertDialog(false);
+            }
+        });
 
         initCameraFunctions();
         initStatusBar();
@@ -186,8 +238,58 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
             unregisterReceiver(mReceiver);
         registerReceiver(mReceiver, filter);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    private void showAlertDialog(final boolean isToTakeOff) {
+        String takeoff = "Take Off";
+        String land = "Land";
+        final String whatToDo;
+        if (isToTakeOff) {
+            whatToDo = takeoff;
+        } else
+            whatToDo = land;
+        new AlertDialog.Builder(this)
+                .setTitle("Are you sure to " + whatToDo + "the drone?")
+                .setPositiveButton(whatToDo, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (mProduct != null && mProduct instanceof DJIAircraft) {
+                            if (isToTakeOff) {
+                                ((DJIAircraft) mProduct).getFlightController().takeOff(new DJICompletionCallback() {
+                                    @Override
+                                    public void onResult(DJIError djiError) {
+                                        if (djiError == null) {
+                                            showToast("Drone " + whatToDo);
+                                        } else {
+                                            showToast("Error: " + djiError.getDescription());
+                                        }
+                                    }
+                                });
+                            } else {
+                                ((DJIAircraft) mProduct).getFlightController().goHome(new DJICompletionCallback() {
+                                    @Override
+                                    public void onResult(DJIError djiError) {
+                                        if (djiError == null) {
+                                            showToast("Drone " + whatToDo);
+                                        } else {
+                                            showToast("Error: " + djiError.getDescription());
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }).create().show();
+    }
 
     private void initStatusBar() {
         statusBarLayout = (LinearLayout) findViewById(R.id.statusBar);
@@ -568,6 +670,22 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
         unregisterReceiver(mReceiver);
         super.onStop();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "FPV Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.freeman.flyshare/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.disconnect();
     }
 
     @Override

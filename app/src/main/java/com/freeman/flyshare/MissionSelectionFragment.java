@@ -8,10 +8,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 
-public class MissionSelectionFragment extends Fragment {
+public class MissionSelectionFragment extends Fragment implements View.OnClickListener {
 
+    Button followMeButton, hotPointButton, panoramaButton, yourMissionButton;
 
     private OnFragmentInteractionListener mListener;
 
@@ -37,9 +39,38 @@ public class MissionSelectionFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_mission_selection, container, false);
+        View view = inflater.inflate(R.layout.fragment_mission_selection, container, false);
+
+        followMeButton = (Button) view.findViewById(R.id.follow_me_button);
+        hotPointButton = (Button) view.findViewById(R.id.hot_point_button);
+        panoramaButton = (Button) view.findViewById(R.id.panorama_button);
+        yourMissionButton = (Button) view.findViewById(R.id.waypoint_button);
+        followMeButton.setOnClickListener(this);
+        hotPointButton.setOnClickListener(this);
+        panoramaButton.setOnClickListener(this);
+        yourMissionButton.setOnClickListener(this);
+        return view;
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.follow_me_button:
+                mListener.onMissionTypeSelected(1);
+                break;
+            case R.id.hot_point_button:
+                mListener.onMissionTypeSelected(2);
+                break;
+            case R.id.panorama_button:
+                mListener.onMissionTypeSelected(3);
+                break;
+            case R.id.waypoint_button:
+                mListener.onMissionTypeSelected(4);
+                break;
+            default:
+                break;
+        }
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -47,9 +78,9 @@ public class MissionSelectionFragment extends Fragment {
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-            Log.e("MissionSelection", "OnFragmentInteractListener not implemented! ");
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+//            Log.e("MissionSelection", "OnFragmentInteractListener not implemented! ");
         }
     }
 
@@ -58,6 +89,7 @@ public class MissionSelectionFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
 
     /**
      * This interface must be implemented by activities that contain this
@@ -71,6 +103,6 @@ public class MissionSelectionFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction();
+        void onMissionTypeSelected(int i);
     }
 }

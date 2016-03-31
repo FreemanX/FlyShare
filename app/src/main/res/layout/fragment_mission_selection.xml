@@ -15,7 +15,7 @@
             android:layout_width="120dp"
             android:layout_height="match_parent"
             android:layout_margin="5dp"
-            android:background="#ad353535"
+            android:background="#c1000000"
             android:text="Follow Me"
             android:textColor="#d8ffffff" />
 
@@ -24,7 +24,7 @@
             android:layout_width="120dp"
             android:layout_height="match_parent"
             android:layout_margin="5dp"
-            android:background="#ad353535"
+            android:background="#c1000000"
             android:text="Hot Point"
             android:textColor="#d8ffffff" />
 
@@ -33,7 +33,7 @@
             android:layout_width="120dp"
             android:layout_height="match_parent"
             android:layout_margin="5dp"
-            android:background="#ad353535"
+            android:background="#c1000000"
             android:text="Panorama"
             android:textColor="#d8ffffff" />
 
@@ -42,7 +42,7 @@
             android:layout_width="120dp"
             android:layout_height="match_parent"
             android:layout_margin="5dp"
-            android:background="#ad353535"
+            android:background="#c1000000"
             android:text="Your Mission"
             android:textColor="#d8ffffff" />
     </LinearLayout>

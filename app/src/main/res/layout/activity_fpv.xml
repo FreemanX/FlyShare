@@ -34,7 +34,7 @@
         android:layout_height="100dp"
         android:layout_below="@+id/cameraFunctions"
         android:layout_marginLeft="300dp"
-        android:background="#ad353535"
+        android:background="#63353535"
         android:gravity="center"
         android:orientation="horizontal">
 

@@ -57,7 +57,6 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
         IntentFilter filter = new IntentFilter();
         filter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
 
-
         mReceivedVideoDataCallBack = new DJICamera.CameraReceivedVideoDataCallback() {
             @Override
             public void onResult(byte[] videoBuffer, int size) {
