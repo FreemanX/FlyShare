@@ -100,6 +100,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     class SmallMapTask extends TimerTask {
         @Override
         public void run() {
+            if (homeLat == 0 || homeLat == 0 || currentLng == 0 || currentLat == 0)
+                updateDroneInfo();
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -113,6 +115,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     class BigMapTask extends TimerTask {
         @Override
         public void run() {
+            if (homeLat == 0 || homeLat == 0 || currentLng == 0 || currentLat == 0)
+                updateDroneInfo();
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

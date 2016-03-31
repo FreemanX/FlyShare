@@ -44,7 +44,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB;
     private Button takePhotoBtn;
     private ToggleButton takeVideoBtn;
-    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout;
+    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout, missionWindownLayout;
     private TextView altTV, modeTV, connectionTV, powerTV, satlTV, recordTimeTV;
     private ImageView videoDot;
 
@@ -146,7 +146,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         }
         /*---------------------------------UI init----------------------------------*/
         smallFragmentLayout = (LinearLayout) findViewById(R.id.small_window);
-
         swapViewIB = (ImageButton) findViewById(R.id.swap_button);
         swapViewIB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,12 +167,18 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
         checkConnectionStatus();
 
+        this.missionWindownLayout = (LinearLayout) findViewById(R.id.mission_window);
+        missionWindownLayout.setVisibility(View.INVISIBLE);
+        initMissionSelectionFragment();
+
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
             unregisterReceiver(mReceiver);
         registerReceiver(mReceiver, filter);
     }
+
 
     private void initStatusBar() {
         statusBarLayout = (LinearLayout) findViewById(R.id.statusBar);
@@ -252,6 +257,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
+    private void initMissionSelectionFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.mission_window, MissionSelectionFragment.newInstance(), MissionSelectionFragment.class.toString())
+                .commit();
+    }
+
     private void hideCameraConfig() {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(CameraConfigFragment.class.getName());
         if (fragment != null) {
@@ -313,21 +325,18 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (mProduct != null && mProduct instanceof DJIAircraft) {
             mFlightController = ((DJIAircraft) mProduct).getFlightController();
             if (mFlightController == null) return;
+
+            Log.e("updateStatus", "Updating status called! ");
             mFlightController.setUpdateSystemStateCallback(new DJIFlightControllerDelegate.FlightControllerUpdateSystemStateCallback() {
                 @Override
                 public void onResult(DJIFlightControllerDataType.DJIFlightControllerCurrentState djiFlightControllerCurrentState) {
                     DJIFlightControllerDataType.DJILocationCoordinate3D threedee = djiFlightControllerCurrentState.getAircraftLocation();
-                    final float alt = threedee.getAltitude();
-                    final String mode = djiFlightControllerCurrentState.getFlightModeString();
-                    final double satl = djiFlightControllerCurrentState.getSatelliteCount();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            altTV.setText(Float.toString(alt));
-                            modeTV.setText(mode);
-                            satlTV.setText(Double.toString(satl));
-                        }
-                    });
+                    float alt = threedee.getAltitude();
+                    String mode = djiFlightControllerCurrentState.getFlightModeString();
+                    double satl = djiFlightControllerCurrentState.getSatelliteCount();
+                    Log.e("updateStatus", "setUpdateSystemStateCallback called! " + Float.toString(alt) + ", " +
+                            mode + ", " + Double.toString(satl));
+                    updateFlightControllerStatusUI(alt, mode, satl);
                 }
             });
 
@@ -345,6 +354,21 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             });
 
         }
+    }
+
+    private void updateFlightControllerStatusUI(final float alt, final String mode, final double satl) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                altTV.setText(Float.toString(alt));
+                modeTV.setText(mode);
+                satlTV.setText(Double.toString(satl));
+                if (mode.equals("F_GPS"))
+                    missionWindownLayout.setVisibility(View.VISIBLE);
+                else
+                    missionWindownLayout.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     private void setCameraMode(int cameraMode) // 0 for photo, 1 for video, 2 for Playback, 3 for MediaDownload, 4 for Unknown

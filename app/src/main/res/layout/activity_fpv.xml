@@ -33,45 +33,10 @@
         android:layout_width="620dp"
         android:layout_height="100dp"
         android:layout_below="@+id/cameraFunctions"
-        android:layout_marginLeft="350dp"
+        android:layout_marginLeft="300dp"
         android:background="#ad353535"
+        android:gravity="center"
         android:orientation="horizontal">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Follow Me"
-            android:id="@+id/follow_me_button"
-            android:background="#ad353535"
-            android:textColor="#d8ffffff"
-            android:layout_margin="5dp" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Hot Point"
-            android:id="@+id/hot_point_button"
-            android:background="#ad353535"
-            android:textColor="#d8ffffff"
-            android:layout_margin="5dp" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Panorama"
-            android:id="@+id/panorama_button"
-            android:background="#ad353535"
-            android:textColor="#d8ffffff"
-            android:layout_margin="5dp" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Your Mission"
-            android:id="@+id/waypoint_button"
-            android:background="#ad353535"
-            android:textColor="#d8ffffff"
-            android:layout_margin="5dp" />
 
     </LinearLayout>
 
