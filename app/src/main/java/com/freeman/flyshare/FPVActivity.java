@@ -45,18 +45,19 @@ import dji.sdk.base.DJIError;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraMode;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraShootPhotoMode;
 
-public class FPVActivity extends AppCompatActivity implements View.OnClickListener, MissionSelectionFragment.OnFragmentInteractionListener {
+public class FPVActivity extends AppCompatActivity implements View.OnClickListener, MissionSelectionFragment.OnFragmentInteractionListener, MissionFragment.OnCancelClickListener {
     String TAG = "FPVActivity";
     public static FragmentManager fragmentManager;
     public boolean isPhotoMode = true;
     public static boolean FPVIsSmall = false;
-    private boolean cameraConfigIsShow = false;
+    private boolean cameraConfigIsShow, missionSelected = false;
     private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB, takeOffButton, landingButton;
     private Button takePhotoBtn;
     private ToggleButton takeVideoBtn;
-    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout, missionWindownLayout;
+    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout, missionSelectionWindowLayout, missionConsoleLayout;
     private TextView altTV, modeTV, connectionTV, powerTV, satlTV, recordTimeTV;
     private ImageView videoDot;
+    private MissionFragment currentMissionFragment;
 
     private DJIFlightController mFlightController;
     private boolean isRecording = false;
@@ -71,7 +72,34 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public void onMissionTypeSelected(int i) {
-        showToast("Mission type " + Integer.toString(i));
+
+        switch (i) {
+            case 1:
+                missionSelected = true;
+                currentMissionFragment = FollowMeMissionFragment.newInstance();
+                missionSelectionWindowLayout.setVisibility(View.GONE);
+                missionConsoleLayout.setVisibility(View.VISIBLE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.mission_console_window, currentMissionFragment, FollowMeMissionFragment.class.getName())
+                        .commit();
+                showToast("Follow me Mission selected");
+                break;
+            case 2:
+                missionSelected = true;
+                showToast("Hot point Mission selected");
+                break;
+            case 3:
+                missionSelected = true;
+                showToast("Panorama Mission selected");
+                break;
+            case 4:
+                missionSelected = true;
+                showToast("Your Mission selected");
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -92,6 +120,17 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 Uri.parse("android-app://com.freeman.flyshare/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onCancelClick() {
+        if (currentMissionFragment != null) {
+            getSupportFragmentManager().beginTransaction().remove(currentMissionFragment).commit();
+            currentMissionFragment = null;
+        }
+        missionSelected = false;
+        missionSelectionWindowLayout.setVisibility(View.VISIBLE);
+        missionConsoleLayout.setVisibility(View.GONE);
     }
 
 
@@ -182,57 +221,29 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.activity_fpv);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Log.e("FPVActivity", "==================>> onCreate!");
+
         mProduct = FlyShareApplication.getProductInstance();
-        fragmentManager = getSupportFragmentManager();
-
-        showFPVFragment();
-        showMapFragment();
-
         if (mProduct != null) {
             initDroneState();
         }
         /*---------------------------------UI init----------------------------------*/
-        smallFragmentLayout = (LinearLayout) findViewById(R.id.small_window);
-        swapViewIB = (ImageButton) findViewById(R.id.swap_button);
-        swapViewIB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("swapViewIB", "================== >>> OnClickListener");
-                if (FPVIsSmall) {
-                    FPVIsSmall = false;
-                    setFPVFragmentLarge(true);
-                } else {
-                    FPVIsSmall = true;
-                    setFPVFragmentLarge(false);
-                }
-            }
-        });
-        takeOffButton = (ImageButton) findViewById(R.id.takeoff_button);
-        takeOffButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAlertDialog(true);
-            }
-        });
-        landingButton = (ImageButton) findViewById(R.id.landing_button);
-        landingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAlertDialog(false);
-            }
-        });
-
+        initLeftSideButtons();
         initCameraFunctions();
         initStatusBar();
         initRecordVideoBar();
 
-        checkConnectionStatus();
-
-        this.missionWindownLayout = (LinearLayout) findViewById(R.id.mission_window);
-        missionWindownLayout.setVisibility(View.INVISIBLE);
+        /*---------------------------------Fragments ----------------------------------*/
+        fragmentManager = getSupportFragmentManager();
+        showFPVFragment();
+        showMapFragment();
+        this.missionSelectionWindowLayout = (LinearLayout) findViewById(R.id.mission_window);
+//        missionSelectionWindowLayout.setVisibility(View.GONE);
         initMissionSelectionFragment();
+        this.missionConsoleLayout = (LinearLayout) findViewById(R.id.mission_console_window);
+//        missionConsoleLayout.setVisibility(View.GONE);
 
 
+        checkConnectionStatus();
         IntentFilter filter = new IntentFilter();
         filter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
         if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
@@ -289,6 +300,38 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                         dialog.cancel();
                     }
                 }).create().show();
+    }
+
+    private void initLeftSideButtons() {
+        smallFragmentLayout = (LinearLayout) findViewById(R.id.small_window);
+        swapViewIB = (ImageButton) findViewById(R.id.swap_button);
+        swapViewIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("swapViewIB", "================== >>> OnClickListener");
+                if (FPVIsSmall) {
+                    FPVIsSmall = false;
+                    setFPVFragmentLarge(true);
+                } else {
+                    FPVIsSmall = true;
+                    setFPVFragmentLarge(false);
+                }
+            }
+        });
+        takeOffButton = (ImageButton) findViewById(R.id.takeoff_button);
+        takeOffButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAlertDialog(true);
+            }
+        });
+        landingButton = (ImageButton) findViewById(R.id.landing_button);
+        landingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAlertDialog(false);
+            }
+        });
     }
 
     private void initStatusBar() {
@@ -470,10 +513,19 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 altTV.setText(Float.toString(alt));
                 modeTV.setText(mode);
                 satlTV.setText(Double.toString(satl));
-                if (mode.equals("F_GPS"))
-                    missionWindownLayout.setVisibility(View.VISIBLE);
-                else
-                    missionWindownLayout.setVisibility(View.INVISIBLE);
+                if (mode.equals("F_GPS")) {
+                    if (!missionSelected)
+                        missionSelectionWindowLayout.setVisibility(View.VISIBLE);
+                    missionConsoleLayout.setVisibility(View.VISIBLE);
+                } else {
+                    missionSelectionWindowLayout.setVisibility(View.GONE);
+                    if (currentMissionFragment != null) {
+                        getSupportFragmentManager().beginTransaction().remove(currentMissionFragment).commit();
+                        currentMissionFragment = null;
+                    }
+                    missionConsoleLayout.setVisibility(View.GONE);
+                    missionSelected = false;
+                }
             }
         });
     }

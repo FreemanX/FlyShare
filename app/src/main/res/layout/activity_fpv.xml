@@ -15,6 +15,19 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/mission_console_window"
+        android:layout_width="200dp"
+        android:layout_height="330dp"
+        android:layout_below="@+id/statusBar"
+        android:layout_alignEnd="@+id/small_window"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="0dp"
+        android:background="#00000000"
+        android:orientation="horizontal"
+        android:clickable="true">
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/small_window"
@@ -30,13 +43,15 @@
 
     <LinearLayout
         android:id="@+id/mission_window"
-        android:layout_width="620dp"
+        android:layout_width="530dp"
         android:layout_height="100dp"
         android:layout_below="@+id/cameraFunctions"
         android:layout_marginLeft="300dp"
-        android:background="#63353535"
+        android:layout_marginBottom="5dp"
+        android:background="#00353535"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:clickable="true">
 
     </LinearLayout>
 
@@ -193,7 +208,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="0dp"
-        android:background="#ad353535"
+        android:background="#b5242424"
         android:gravity="center"
         android:orientation="horizontal">
 
