@@ -46,6 +46,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     DJIAircraft mAircraft;
     DJIFlightController mFlightController;
 
+
     double homeLat, homeLng;
 
     public MissionFragment() {
@@ -57,19 +58,42 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     protected abstract int getFragmentViewResource();
 
     protected void showMissionOngoingUI() {
-        ongoingLayout.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ongoingLayout.setVisibility(View.VISIBLE);
+            }
+        });
+
     }
 
     protected void hideMissionOngoingUI() {
-        ongoingLayout.setVisibility(View.GONE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ongoingLayout.setVisibility(View.GONE);
+            }
+        });
+
     }
 
     protected void hideConfigMissionUI() {
-        configLayout.setVisibility(View.GONE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                configLayout.setVisibility(View.GONE);
+            }
+        });
+
     }
 
     protected void showConfigMissionUI() {
-        configLayout.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                configLayout.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     protected abstract void initMissionOngoingUIComponents();
@@ -83,7 +107,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         this.inflater = inflater;
         this.container = container;
         this.savedInstanceState = savedInstanceState;
-
+        initMissionVariables();
         mView = inflater.inflate(getFragmentViewResource(), container, false);
         if (mView != null) { // init UI
             initBasicViewComponent(mView);
@@ -98,9 +122,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         else {
             throw new RuntimeException(getContext().toString() + "OnCancelClickListener must be implemented!");
         }
-
         initBaseMissionVariables();
-        initMissionVariables();
         updateHomeLocation();
         return mView;
     }
@@ -134,8 +156,14 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void hideProgressBar() {
-        progressBar.setVisibility(View.INVISIBLE);
-        progressTitleTextView.setVisibility(View.INVISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.INVISIBLE);
+                progressTitleTextView.setVisibility(View.INVISIBLE);
+            }
+        });
+
     }
 
     protected void initBasicViewComponent(View view) {
@@ -165,6 +193,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         if (!(FlyShareApplication.getProductInstance() instanceof DJIAircraft)) return;
         mAircraft = (DJIAircraft) FlyShareApplication.getProductInstance();
         mFlightController = mAircraft.getFlightController();
+        if (mFlightController == null) return;
         final CountDownLatch cdl = new CountDownLatch(1);
         mFlightController.getHomeLocation(new DJIBaseComponent.DJICompletionCallbackWith<DJIFlightControllerDataType.DJILocationCoordinate2D>() {
             @Override
@@ -267,11 +296,12 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                         public void onResult(DJIError djiError) {
                             if (djiError == null) {
                                 onStartClickOperationSuccess();
-                                Utils.setResultToToast(getContext(), "Mission failed: " + djiError.getDescription());
+                                Utils.setResultToToast(getContext(), "Mission started");
                                 if (mMission instanceof DJIFollowMeMission) {
                                     startUpdateFollowedObjectLocation();
                                 }
                             } else {
+                                Utils.setResultToToast(getContext(), "Mission failed: " + djiError.getDescription());
                                 Log.e("onClickStartBtn", "start mission execution callback failed: " + djiError.getDescription());
                             }
                         }
@@ -344,47 +374,79 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
 
     protected void onUploadClickOperationSuccess() {
         hideConfigMissionUI();
-        uploadButton.setVisibility(View.GONE);
-        startButton.setVisibility(View.VISIBLE);
-        pauseButton.setVisibility(View.GONE);
-        resumeButton.setVisibility(View.GONE);
-        stopButton.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uploadButton.setVisibility(View.GONE);
+                startButton.setVisibility(View.VISIBLE);
+                pauseButton.setVisibility(View.GONE);
+                resumeButton.setVisibility(View.GONE);
+                stopButton.setVisibility(View.VISIBLE);
+                cancelButton.setVisibility(View.GONE);
+            }
+        });
+
     }
 
     protected void onStartClickOperationSuccess() {
         showMissionOngoingUI();
-        uploadButton.setVisibility(View.GONE);
-        startButton.setVisibility(View.GONE);
-        pauseButton.setVisibility(View.VISIBLE);
-        resumeButton.setVisibility(View.GONE);
-        stopButton.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uploadButton.setVisibility(View.GONE);
+                startButton.setVisibility(View.GONE);
+                pauseButton.setVisibility(View.VISIBLE);
+                resumeButton.setVisibility(View.GONE);
+                stopButton.setVisibility(View.VISIBLE);
+            }
+        });
+
     }
 
     protected void onPauseClickOperationSuccess() {
-        uploadButton.setVisibility(View.GONE);
-        startButton.setVisibility(View.GONE);
-        pauseButton.setVisibility(View.GONE);
-        resumeButton.setVisibility(View.VISIBLE);
-        stopButton.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uploadButton.setVisibility(View.GONE);
+                startButton.setVisibility(View.GONE);
+                pauseButton.setVisibility(View.GONE);
+                resumeButton.setVisibility(View.VISIBLE);
+                stopButton.setVisibility(View.VISIBLE);
+            }
+        });
+
     }
 
     protected void onResumeClickOperationSuccess() {
-        uploadButton.setVisibility(View.GONE);
-        startButton.setVisibility(View.GONE);
-        pauseButton.setVisibility(View.VISIBLE);
-        resumeButton.setVisibility(View.GONE);
-        stopButton.setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uploadButton.setVisibility(View.GONE);
+                startButton.setVisibility(View.GONE);
+                pauseButton.setVisibility(View.VISIBLE);
+                resumeButton.setVisibility(View.GONE);
+                stopButton.setVisibility(View.VISIBLE);
+            }
+        });
+
     }
 
     protected void onStopClickOperationSuccess() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uploadButton.setVisibility(View.VISIBLE);
+                startButton.setVisibility(View.GONE);
+                pauseButton.setVisibility(View.GONE);
+                resumeButton.setVisibility(View.GONE);
+                stopButton.setVisibility(View.GONE);
+                cancelButton.setVisibility(View.VISIBLE);
+            }
+        });
         showConfigMissionUI();
         hideMissionOngoingUI();
         hideProgressBar();
-        uploadButton.setVisibility(View.VISIBLE);
-        startButton.setVisibility(View.GONE);
-        pauseButton.setVisibility(View.GONE);
-        resumeButton.setVisibility(View.GONE);
-        stopButton.setVisibility(View.GONE);
+
     }
 
 

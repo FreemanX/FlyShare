@@ -61,7 +61,8 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
             @Override
             public void onResult(byte[] videoBuffer, int size) {
                 if (mCodecManager != null) {
-                    mCodecManager.sendDataToDecoder(videoBuffer, size);
+                    if (videoBuffer != null && size > 0)
+                        mCodecManager.sendDataToDecoder(videoBuffer, size);
                 } else
                     Log.e("FPVFragment", "mCodecManager is null...");
             }
@@ -71,7 +72,8 @@ public class DJIFPVFragment extends Fragment implements TextureView.SurfaceTextu
             @Override
             public void onResult(byte[] videoBuffer, int size) {
                 if (mCodecManager != null) {
-                    mCodecManager.sendDataToDecoder(videoBuffer, size);
+                    if (videoBuffer != null && size > 0)
+                        mCodecManager.sendDataToDecoder(videoBuffer, size);
                 }
             }
         };

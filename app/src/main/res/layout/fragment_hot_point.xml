@@ -1,0 +1,310 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.freeman.flyshare.HotPointFragment">
+
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="330dp"
+        android:background="#d61a1a1a"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Hot Point Mission"
+            android:textColor="#f3d0d0d0"
+            android:textSize="22dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/progress_bar_textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Progress"
+            android:textColor="#f3d0d0d0"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp" />
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/upload_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Upload"
+                    android:textColor="#f3d0d0d0" />
+
+                <LinearLayout
+                    android:id="@+id/config_mission_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Hot Point"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/hot_point_select_radio_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/current_location_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Current location"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/set_on_map_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Set on Map"
+                            android:textColor="#f3d0d0d0" />
+                    </RadioGroup>
+
+                    <Button
+                        android:id="@+id/drop_marker_button"
+                        android:layout_width="100dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:background="#000000"
+                        android:text="Set marker"
+                        android:textColor="#f3d0d0d0" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Heading"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <!--spinner here-->
+                    <Spinner
+                        android:id="@+id/select_heading_spinner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="#f3d0d0d0" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Altitude: "
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/altitude_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:text="1"
+                        android:textColor="#f3d0d0d0" />
+
+                    <SeekBar
+                        android:id="@+id/altitude_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
+                        android:background="#4f000001"
+                        android:maxHeight="20dp"
+                        android:minHeight="20dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Radius: "
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/radius_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:text="1"
+                        android:textColor="#f3d0d0d0" />
+
+                    <SeekBar
+                        android:id="@+id/radius_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
+                        android:background="#4f000001"
+                        android:maxHeight="20dp"
+                        android:minHeight="20dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Angular Speed"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/angular_speed_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:text="0 % of full speed"
+                        android:textColor="#f3d0d0d0" />
+
+                    <SeekBar
+                        android:id="@+id/angular_speed_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
+                        android:background="#4f000001"
+                        android:maxHeight="20dp"
+                        android:minHeight="20dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Direction"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/hot_point_direction_radio_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/clockwise_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Clockwise"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/anticlockwise_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Anticlockwise"
+                            android:textColor="#f3d0d0d0" />
+                    </RadioGroup>
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/start_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Start"
+                    android:textColor="#f3d0d0d0" />
+
+                <Button
+                    android:id="@+id/pause_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Pause"
+                    android:textColor="#f3d0d0d0" />
+
+                <Button
+                    android:id="@+id/resume_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Resume"
+                    android:textColor="#f3d0d0d0" />
+
+                <LinearLayout
+                    android:id="@+id/ongoing_mission_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical">
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/stop_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Stop"
+                    android:textColor="#f3d0d0d0" />
+
+            </LinearLayout>
+        </ScrollView>
+
+
+        <Button
+            android:id="@+id/cancel_mission_button"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="9dp"
+            android:background="#000000"
+            android:text="Cancel"
+            android:textColor="#f3d0d0d0" />
+
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -3,12 +3,13 @@ package com.freeman.flyshare;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import dji.sdk.MissionManager.DJIFollowMeMission;
 import dji.sdk.MissionManager.DJIMission;
+import dji.sdk.base.DJIBaseComponent;
+import dji.sdk.base.DJIError;
 
 
 public final class FollowMeMissionFragment extends MissionFragment {
@@ -16,14 +17,98 @@ public final class FollowMeMissionFragment extends MissionFragment {
     private RadioGroup headingRG;
     private RadioButton headingObjectRB, controlledByRC_RB;
     private DJIFollowMeMission.DJIFollowMeHeading heading = DJIFollowMeMission.DJIFollowMeHeading.ControlledByRemoteController;
+    UpdateFollowingObjectLocationThread updateFollowingObjectLocationThread = null;
 
     @Override
     public void missionProgressStatus(DJIMission.DJIMissionProgressStatus djiMissionProgressStatus) {
 
     }
 
-    public class updateFollowingObjectLocationThread extends Thread {
+    @Override
+    protected void startUpdateFollowedObjectLocation() {
+        super.startUpdateFollowedObjectLocation();
+        if (updateFollowingObjectLocationThread != null)
+            updateFollowingObjectLocationThread.start();
+    }
 
+    @Override
+    protected void stopUpdateFollowedObjectLocation() {
+        super.stopUpdateFollowedObjectLocation();
+        if (updateFollowingObjectLocationThread != null) {
+            updateFollowingObjectLocationThread.stopRunning();
+            updateFollowingObjectLocationThread = null;
+        }
+    }
+
+    @Override
+    protected void setPauseUpdateFollowedObjectLocation(boolean isPaused) {
+        super.setPauseUpdateFollowedObjectLocation(isPaused);
+        if (updateFollowingObjectLocationThread != null)
+            updateFollowingObjectLocationThread.setIsPause(isPaused);
+    }
+
+    static class UpdateFollowingObjectLocationThread extends Thread {
+        private DJIMission mDJIMission = null;
+        private double mHomeLatitude = 181;
+        private double mHomeLongitude = 181;
+
+        private boolean mIsRunning = false;
+        private boolean mIsPausing = false;
+
+        float clock = 0;
+        float radius = 6378137;
+        private double tarPosLat;
+        private double tarPosLon;
+        private double tgtPosX;
+        private double tgtPosY;
+
+        public UpdateFollowingObjectLocationThread(DJIMission mission, double homeLat, double homeLng) {
+            super();
+            mDJIMission = mission;
+            this.mHomeLatitude = homeLat;
+            this.mHomeLongitude = homeLng;
+        }
+
+        @Override
+        public void run() {
+            if (
+                    mDJIMission == null ||
+                            mDJIMission.getMissionType() != DJIMission.DJIMissionType.Followme ||
+                            !Utils.checkGpsCoordinate(mHomeLatitude, mHomeLongitude)
+                    )
+                return;
+            mIsRunning = true;
+
+
+            while (mIsRunning && clock < 1800) {
+                tgtPosX = 5 * Math.sin(clock / 10 * 0.5);
+                tgtPosY = 5 * Math.cos(clock / 10 * 0.5);
+                tarPosLat = Utils.Radian(mHomeLatitude) + tgtPosX / radius;
+                tarPosLon = Utils.Radian(mHomeLongitude) + tgtPosY / radius / Math.cos(Utils.Radian(mHomeLatitude));
+                DJIFollowMeMission.updateFollowMeCoordinate(
+                        Utils.Degree(tarPosLat), Utils.Degree(tarPosLon), new DJIBaseComponent.DJICompletionCallback() {
+
+                            @Override
+                            public void onResult(DJIError error) {
+                            }
+                        });
+                if (!mIsPausing)
+                    clock++;
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void stopRunning() {
+            mIsRunning = false;
+        }
+
+        public void setIsPause(boolean isPaused) {
+            mIsPausing = isPaused;
+        }
     }
 
     public FollowMeMissionFragment() {
@@ -105,18 +190,8 @@ public final class FollowMeMissionFragment extends MissionFragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+
     public interface OnFollowMeMissionFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 }

@@ -8,6 +8,15 @@
     <string name="disconnected">Disconnected</string>
     <string name="title_activity_maps">Map</string>
 
+    <string-array name="hotpoint_heading">
+        <item>Towards hot point</item>
+        <item>Controlled by RC</item>
+        <item>Use current direction</item>
+        <item>Away from point</item>
+        <item>Head forwards</item>
+        <item>Head backwards</item>
+    </string-array>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

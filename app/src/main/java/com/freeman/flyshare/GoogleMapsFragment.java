@@ -169,6 +169,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         mProduct = FlyShareApplication.getProductInstance();
         if (mProduct != null && mProduct instanceof DJIAircraft) {
             DJIFlightController djiFlightController = ((DJIAircraft) mProduct).getFlightController();
+            if (djiFlightController == null) return;
             DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState = djiFlightController.getCurrentState();
             DJIFlightControllerDataType.DJILocationCoordinate3D currentLocation = currentState.getAircraftLocation();
             currentLat = currentLocation.getLatitude();

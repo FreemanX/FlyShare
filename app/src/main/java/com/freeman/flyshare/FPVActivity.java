@@ -87,6 +87,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             case 2:
                 missionSelected = true;
+                currentMissionFragment = HotPointFragment.newInstance();
+                missionSelectionWindowLayout.setVisibility(View.GONE);
+                missionConsoleLayout.setVisibility(View.VISIBLE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.mission_console_window, currentMissionFragment, HotPointFragment.class.getName())
+                        .commit();
                 showToast("Hot point Mission selected");
                 break;
             case 3:
@@ -198,6 +205,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         stopRecord();
         setCameraMode(0);
         setCameraMode(0);
+        if (mProduct == null || mProduct.getCamera() == null) return;
         mProduct.getCamera().setExposureMode(DJICameraSettingsDef.CameraExposureMode.Program, new DJICompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
@@ -237,10 +245,10 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         showFPVFragment();
         showMapFragment();
         this.missionSelectionWindowLayout = (LinearLayout) findViewById(R.id.mission_window);
-//        missionSelectionWindowLayout.setVisibility(View.GONE);
+//        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
         initMissionSelectionFragment();
         this.missionConsoleLayout = (LinearLayout) findViewById(R.id.mission_console_window);
-//        missionConsoleLayout.setVisibility(View.GONE);
+//        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
 
 
         checkConnectionStatus();
