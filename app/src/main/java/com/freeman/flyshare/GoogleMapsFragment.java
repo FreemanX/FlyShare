@@ -6,12 +6,17 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,12 +37,13 @@ import java.util.TimerTask;
 
 import dji.sdk.FlightController.DJIFlightController;
 import dji.sdk.FlightController.DJIFlightControllerDataType;
-import dji.sdk.FlightController.DJIFlightControllerDelegate;
 import dji.sdk.Products.DJIAircraft;
 import dji.sdk.base.DJIBaseProduct;
 
 
-public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
+public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener,
+        OnMapReadyCallback,
+        FPVActivity.AbleToHandleMarkerOnMap {
 
     private Timer mTimer;
     private TimerTask mTask;
@@ -48,7 +54,17 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private Marker droneMarker, homeMarker;
     private MarkerOptions droneMarkerOptions, homeMarkerOptions;
     private Polyline home2Drone = null;
-    private static GoogleMapsFragment googleMapsFragment = null;
+    private LinearLayout markerControlLinearLayout;
+    private ToggleButton addSingleMarkerToggleButton, addMarkersToggleButton;
+    private Button doneAddButton, clearAllMarkerButton;
+    public static boolean isAddSingle, isAddMultiple, isMakingChange = false;
+    private ReceiveSingleLocationCallBack receiveSingleLocationCallBack;
+    private LatLng resultSingleLocation;
+    Marker singleMarker;
+
+
+    private ReceiveMultipleLocationsCallBack receiveMultipleLocationsCallBack;
+    private LatLng[] resultMultipleLocations;
 
     DJIBaseProduct mProduct;
 
@@ -56,10 +72,14 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         // Required empty public constructor
     }
 
+    void setSingleMarker(Marker savedMarker) {
+        this.singleMarker = savedMarker;
+    }
 
-    public static GoogleMapsFragment getGoogleMapsFragment() {
+    public static GoogleMapsFragment getGoogleMapsFragment(@Nullable Marker savedMarker) {
         GoogleMapsFragment fragment = new GoogleMapsFragment();
-
+        if (savedMarker != null)
+            fragment.setSingleMarker(savedMarker);
         return fragment;
     }
 
@@ -81,11 +101,13 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
         droneMarkerOptions = new MarkerOptions();
         droneMarkerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_drone));
-        droneMarkerOptions.anchor(0.5f, 0.5f).rotation(-90f);
+        droneMarkerOptions.anchor(0.5f, 0.5f).rotation(-90f).flat(true);
 
         homeMarkerOptions = new MarkerOptions();
         homeMarkerOptions.anchor(0.5f, 0.7f);
         homeMarkerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_home));
+
+        initMarkerControlLayout(view);
 
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
@@ -97,15 +119,144 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         return view;
     }
 
+    private void initMarkerControlLayout(View v) {
+        this.markerControlLinearLayout = (LinearLayout) v.findViewById(R.id.add_marker_layout);
+        markerControlLinearLayout.setVisibility(View.GONE);
+        this.addSingleMarkerToggleButton = (ToggleButton) v.findViewById(R.id.add_single_marker_toggleButton);
+        this.addMarkersToggleButton = (ToggleButton) v.findViewById(R.id.add_markers_toggleButton);
+        this.doneAddButton = (Button) v.findViewById(R.id.done_add_marker_button);
+        this.clearAllMarkerButton = (Button) v.findViewById(R.id.clear_markers_button);
+        doneAddButton.setVisibility(View.GONE);
+
+        doneAddButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (receiveSingleLocationCallBack != null) {
+                    if (Utils.checkGpsCoordinate(resultSingleLocation.latitude, resultSingleLocation.longitude))
+                        receiveSingleLocationCallBack.onLocationReceive(true, resultSingleLocation);
+                    else
+                        receiveSingleLocationCallBack.onLocationReceive(false, null);
+                }
+                markerControlLinearLayout.setVisibility(View.GONE);
+                isMakingChange = false;
+            }
+        });
+
+        addSingleMarkerToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    isAddSingle = true;
+                    doneAddButton.setVisibility(View.GONE);
+                } else {
+                    isAddSingle = false;
+                    doneAddButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        addMarkersToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    isAddMultiple = true;
+                    doneAddButton.setVisibility(View.GONE);
+                } else {
+                    isAddMultiple = false;
+                    doneAddButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+//        if (FPVActivity.FPVIsSmall)
+//            markerControlLinearLayout.setVisibility(View.VISIBLE);
+//        else
+//            markerControlLinearLayout.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void cancelSetMarkerOnMap() {
+        isAddSingle = false;
+        isAddMultiple = false;
+        markerControlLinearLayout.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void dropSingleMarkerOnMap(LatLng markLocation) {
+        Utils.setResultToToast(getContext(), "dropSingleMarkerOnMap: " + Double.toString(markLocation.latitude) + ", " + Double.toString(markLocation.longitude));
+        if (singleMarker != null)
+            singleMarker.remove();
+        MarkerOptions options = new MarkerOptions().title("Mission Mark").position(markLocation);
+        singleMarker = mMap.addMarker(options);
+    }
+
+    @Override
+    public void dropMultipleMarkersOnMap(LatLng[] markLocations) {
+        isMakingChange = true;
+        Utils.setResultToToast(getContext(), "dropMultipleMarkersOnMap");
+    }
+
+    @Override
+    public void updateMultipleMarkerOnMap(LatLng[] newLocations) {
+        Utils.setResultToToast(getContext(), "updateMultipleMarkerOnMap");
+    }
+
+    @Override
+    public void updateSingleMakerOnMap(LatLng newLocation) {
+
+        Utils.setResultToToast(getContext(), "updateSingleMakerOnMap" + Double.toString(newLocation.latitude) + ", " + Double.toString(newLocation.longitude));
+        if (singleMarker != null)
+            singleMarker.remove();
+        MarkerOptions options = new MarkerOptions().title("Mission Mark").position(newLocation);
+        singleMarker = mMap.addMarker(options);
+    }
+
+    @Override
+    public void alterMarkersOnMap(LatLng[] markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+        Utils.setResultToToast(getContext(), "alterMarkersOnMap");
+    }
+
+    @Override
+    public void addSingleMarkerOnMap(ReceiveSingleLocationCallBack receiveLocationCallBack) {
+        isMakingChange = true;
+        Utils.setResultToToast(getContext(), "addSingleMarkerOnMap");
+        this.receiveSingleLocationCallBack = receiveLocationCallBack;
+        showSingleMarkerUI();
+        addSingleMarkerToggleButton.setChecked(true);
+    }
+
+    @Override
+    public void addMultipleMarkersOnMap(ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+        Utils.setResultToToast(getContext(), "addMultipleMarkersOnMap");
+    }
+
+    @Override
+    public void cleanMarkers() {
+        if (singleMarker != null)
+            singleMarker.remove();
+        singleMarker = null;
+        receiveSingleLocationCallBack = null;
+        isMakingChange = false;
+        Utils.setResultToToast(getContext(), "cleanMarkers");
+    }
+
+    private void showSingleMarkerUI() {
+        addSingleMarkerToggleButton.setVisibility(View.VISIBLE);
+        markerControlLinearLayout.setVisibility(View.VISIBLE);
+        addMarkersToggleButton.setVisibility(View.GONE);
+        clearAllMarkerButton.setVisibility(View.GONE);
+        doneAddButton.setVisibility(View.GONE);
+    }
+
     class SmallMapTask extends TimerTask {
         @Override
         public void run() {
             if (getActivity() == null) return;
             updateDroneInfo();
+            drawDroneHomeOnMap();
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    drawDroneHomeOnMap();
                     cameraUpdate(false);
                 }
             });
@@ -142,7 +293,6 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         mMap.setOnMarkerClickListener(this);
         mMap.getUiSettings().setZoomControlsEnabled(!FPVActivity.FPVIsSmall);
         mMap.getUiSettings().setCompassEnabled(true);
-
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -160,6 +310,23 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
             }
         });
         mMap.getUiSettings().setAllGesturesEnabled(FPVActivity.FPVIsSmall);
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if (isAddSingle) {
+                    resultSingleLocation = latLng;
+                    if (singleMarker == null)
+                        singleMarker = mMap.addMarker(new MarkerOptions().position(latLng).title("Mission point"));
+                    else
+                        singleMarker.setPosition(latLng);
+                }
+            }
+        });
+        if (this.singleMarker != null) {
+            MarkerOptions markerOptions = new MarkerOptions().position(singleMarker.getPosition()).title(singleMarker.getTitle());
+            singleMarker = mMap.addMarker(markerOptions);
+        }
         updateDroneInfo();
         drawDroneHomeOnMap();
         cameraUpdate(true);

@@ -4,16 +4,59 @@
     android:layout_height="match_parent">
 
     <com.google.android.gms.maps.MapView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/mapView"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-    <!--<fragment-->
-        <!--android:id="@+id/gsmap"-->
-        <!--android:name="com.google.android.gms.maps.SupportMapFragment"-->
-        <!--class="com.google.android.gms.maps.SupportMapFragment"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent" />-->
+    <LinearLayout
+        android:id="@+id/add_marker_layout"
+        android:layout_width="530dp"
+        android:layout_height="100dp"
+        android:layout_gravity="left|bottom"
+        android:layout_marginStart="300dp"
+        android:background="#00353535"
+        android:clickable="true"
+        android:gravity="center"
+        android:orientation="horizontal">
 
+        <ToggleButton
+            android:id="@+id/add_single_marker_toggleButton"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="#c1000000"
+            android:textColor="#d8ffffff"
+            android:textOff="Change Marker"
+            android:textOn="Done" />
+
+        <ToggleButton
+            android:id="@+id/add_markers_toggleButton"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="#c1000000"
+            android:textColor="#d8ffffff"
+            android:textOff="Add Markers"
+            android:textOn="Done" />
+
+        <Button
+            android:id="@+id/clear_markers_button"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="#c1000000"
+            android:text="Clear Markers"
+            android:textColor="#d8ffffff" />
+
+        <Button
+            android:id="@+id/done_add_marker_button"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="#c1000000"
+            android:text="Submit to mission"
+            android:textColor="#d8ffffff" />
+
+    </LinearLayout>
 
 </FrameLayout>

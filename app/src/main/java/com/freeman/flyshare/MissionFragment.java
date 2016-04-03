@@ -1,7 +1,10 @@
 package com.freeman.flyshare;
 
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,6 +43,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     LinearLayout configLayout, ongoingLayout;
 
     OnCancelClickListener mFragmentActivity;
+    MissionRequestMapHandler missionRequestMapHandler;
 
     DJIMission mMission;
     DJIMissionManager mMissionManager;
@@ -107,6 +111,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         this.inflater = inflater;
         this.container = container;
         this.savedInstanceState = savedInstanceState;
+        initBaseMissionVariables();
         initMissionVariables();
         mView = inflater.inflate(getFragmentViewResource(), container, false);
         if (mView != null) { // init UI
@@ -116,18 +121,21 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
             initMissionOngoingUIComponents();
             initConfigMissionUIComponents();
         }
+        updateHomeLocation();
+        return mView;
+    }
+
+    protected void initBaseMissionVariables() {
+        if (getActivity() instanceof MissionRequestMapHandler)
+            missionRequestMapHandler = (MissionRequestMapHandler) getActivity();
+        else
+            throw new RuntimeException(getContext().toString() + "MissionRequestMapHandler must be implemented!");
 
         if (getActivity() instanceof OnCancelClickListener)
             mFragmentActivity = (OnCancelClickListener) getActivity();
         else {
             throw new RuntimeException(getContext().toString() + "OnCancelClickListener must be implemented!");
         }
-        initBaseMissionVariables();
-        updateHomeLocation();
-        return mView;
-    }
-
-    protected void initBaseMissionVariables() {
         if (FlyShareApplication.getProductInstance() != null
                 && FlyShareApplication.getProductInstance() instanceof DJIAircraft
                 && FlyShareApplication.getProductInstance().isConnected()) {
@@ -141,20 +149,6 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
 
     }
 
-    protected void updateProgressBar(final String progressTitle, final float progress) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (progressTitleTextView.getVisibility() != View.VISIBLE)
-                    progressTitleTextView.setVisibility(View.VISIBLE);
-                if (progressBar.getVisibility() != View.VISIBLE)
-                    progressBar.setVisibility(View.VISIBLE);
-                progressTitleTextView.setText(progressTitle);
-                progressBar.setProgress(Math.round(progress));
-            }
-        });
-    }
-
     protected void hideProgressBar() {
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -163,7 +157,6 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                 progressTitleTextView.setVisibility(View.INVISIBLE);
             }
         });
-
     }
 
     protected void initBasicViewComponent(View view) {
@@ -238,6 +231,15 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void finishMission() {
+        if (mMissionManager.getCurrentExecutingMission() != null) {
+            mMissionManager.stopMissionExecution(new DJIBaseComponent.DJICompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError != null)
+                        Log.e("MissionFragment", "finishMission -> stopMissionExecution");
+                }
+            });
+        }
         mFragmentActivity.onCancelClick();
         getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
     }
@@ -261,16 +263,18 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                     mMissionManager.prepareMission(mMission, new DJIMission.DJIMissionProgressHandler() {
                         @Override
                         public void onProgress(DJIMission.DJIProgressType djiProgressType, float progress) {
-                            if (progress >= 0 && progress <= 100)
-                                updateProgressBar(djiProgressType.name(), progress);
-                            else
-                                hideProgressBar();
+
                         }
                     }, new DJIBaseComponent.DJICompletionCallback() {
                         @Override
                         public void onResult(DJIError djiError) {
                             if (djiError == null) {
-                                onUploadClickOperationSuccess();
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        onUploadClickOperationSuccess();
+                                    }
+                                });
                                 Utils.setResultToToast(getContext(), "Success!");
                             } else {
                                 Utils.setResultToToast(getContext(), "Prepare: " + djiError.getDescription());
@@ -295,7 +299,12 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                         @Override
                         public void onResult(DJIError djiError) {
                             if (djiError == null) {
-                                onStartClickOperationSuccess();
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        onStartClickOperationSuccess();
+                                    }
+                                });
                                 Utils.setResultToToast(getContext(), "Mission started");
                                 if (mMission instanceof DJIFollowMeMission) {
                                     startUpdateFollowedObjectLocation();
@@ -315,7 +324,12 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                     @Override
                     public void onResult(DJIError mError) {
                         if (mError == null) {
-                            onPauseClickOperationSuccess();
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    onPauseClickOperationSuccess();
+                                }
+                            });
                             Utils.setResultToToast(getContext(), "Mission paused!");
                             if (mMission instanceof DJIFollowMeMission) {
                                 setPauseUpdateFollowedObjectLocation(true);
@@ -333,7 +347,12 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                     @Override
                     public void onResult(DJIError mError) {
                         if (mError == null) {
-                            onResumeClickOperationSuccess();
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    onResumeClickOperationSuccess();
+                                }
+                            });
                             Utils.setResultToToast(getContext(), "Resume paused!");
                             if (mMission instanceof DJIFollowMeMission) {
                                 setPauseUpdateFollowedObjectLocation(false);
@@ -352,14 +371,20 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                     @Override
                     public void onResult(DJIError mError) {
                         if (mError == null) {
-                            onStopClickOperationSuccess();
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    onStopClickOperationSuccess();
+                                }
+                            });
                             Utils.setResultToToast(getContext(), "Mission stopped!");
                             if (mMission instanceof DJIFollowMeMission) {
                                 stopUpdateFollowedObjectLocation();
                             }
                         } else {
-                            Utils.setResultToToast(getContext(), "Stop mission failed");
+                            Utils.setResultToToast(getContext(), "Stop mission failed :" + mError.getDescription());
                             Log.e("StopMissionClicked", "Failed: " + mError.getDescription());
+                            finishMission();
                         }
                     }
                 });
@@ -452,27 +477,27 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
 
     protected void onUploadClicked() {
         Utils.setResultToToast(getContext(), "onUploadClicked");
-        onUploadClickOperationSuccess(); //TODO for debug only, delete this later
+//        onUploadClickOperationSuccess(); //TODO for debug only, delete this later
     }
 
     protected void onStartClicked() {
         Utils.setResultToToast(getContext(), "onStartClicked");
-        onStartClickOperationSuccess();//TODO for debug only, delete this later
+//        onStartClickOperationSuccess();//TODO for debug only, delete this later
     }
 
     protected void onPauseClicked() {
         Utils.setResultToToast(getContext(), "onPauseClicked");
-        onPauseClickOperationSuccess();//TODO for debug only, delete this later
+//        onPauseClickOperationSuccess();//TODO for debug only, delete this later
     }
 
     protected void onResumeClicked() {
         Utils.setResultToToast(getContext(), "onResumeClicked");
-        onResumeClickOperationSuccess();//TODO for debug only, delete this later
+//        onResumeClickOperationSuccess();//TODO for debug only, delete this later
     }
 
     protected void onStopClicked() {
         Utils.setResultToToast(getContext(), "onStopClicked");
-        onStopClickOperationSuccess(); //TODO for debug only, delete this later
+//        onStopClickOperationSuccess(); //TODO for debug only, delete this later
     }
 
     public interface OnCancelClickListener {

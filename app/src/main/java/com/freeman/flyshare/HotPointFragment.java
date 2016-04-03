@@ -1,12 +1,8 @@
 package com.freeman.flyshare;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -15,10 +11,13 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import dji.sdk.FlightController.DJIFlightControllerDataType;
 import dji.sdk.MissionManager.DJIHotPointMission;
 import dji.sdk.MissionManager.DJIMission;
+import dji.sdk.MissionManager.DJIMissionManager;
 
 public class HotPointFragment extends MissionFragment {
 
@@ -29,7 +28,6 @@ public class HotPointFragment extends MissionFragment {
     private TextView altitudeTextView, radiusTextView, angularSpeedTextView;
     private SeekBar altitudeSeekBar, radiusSeekBar, angularSpeedSeekBar;
 
-    private OnFragmentInteractionListener mListener;
     private double mAltitude, mLat, mLng, mRadius;
     private int mAngularVelocity;
     private DJIHotPointMission.DJIHotPointHeading mHeading;
@@ -69,20 +67,87 @@ public class HotPointFragment extends MissionFragment {
 
     @Override
     protected void initConfigMissionUIComponents() {
+        initSetHotPoint();
+        initSetDirectionUI();
+        initSetAltitudeUI();
+        initSetRadiusUI();
+        initSetAngularSpeedUI();
+        initSelectHeadingUI();
+    }
+
+    private void initSetHotPoint() {
         selectHotPointRadioGroup = (RadioGroup) mView.findViewById(R.id.hot_point_select_radio_group);
         currentLocationRadioButton = (RadioButton) mView.findViewById(R.id.current_location_radioButton);
         setOnMapRadioButton = (RadioButton) mView.findViewById(R.id.set_on_map_radioButton);
         setOnMapButton = (Button) mView.findViewById(R.id.drop_marker_button);
+        setOnMapButton.setVisibility(View.GONE);
+        if (mFlightController != null) {
+            DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState = mFlightController.getCurrentState();
+            updateHotPoint(currentState.getAircraftLocation().getLatitude(), currentState.getAircraftLocation().getLongitude());
+            currentLocationRadioButton.setChecked(true);
+        }
+        selectHotPointRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.current_location_radioButton) {
+//                    getActivity().runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            setOnMapButton.setVisibility(View.GONE);
+//                        }
+//                    });
+                    if (mFlightController != null) {
+                        DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState = mFlightController.getCurrentState();
+                        updateHotPoint(currentState.getAircraftLocation().getLatitude(), currentState.getAircraftLocation().getLongitude());
+                    } else
+                        Utils.setResultToToast(getContext(), "FlightController is null");
+                } else if (checkedId == R.id.set_on_map_radioButton) {
+                    missionRequestMapHandler.sendAddSingleMarkerRequestToMap(new ReceiveSingleLocationCallBack() {
+                        @Override
+                        public void onLocationReceive(boolean isSuccessful, LatLng location) {
+                            getActivity().getSupportFragmentManager().beginTransaction().show(getThis()).commit();
+                            if (isSuccessful) {
+                                updateHotPoint(location.latitude, location.longitude);
+                            } else {
+                                Utils.setResultToToast(getContext(), "Add hop point on map failed!");
+                            }
+                        }
+                    });
+                    getActivity().getSupportFragmentManager().beginTransaction().hide(getThis()).commit();
+                }
+            }
+        });
 
-        initSetDirectionUI();
+        setOnMapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                missionRequestMapHandler.sendAddSingleMarkerRequestToMap(new ReceiveSingleLocationCallBack() {
+                    @Override
+                    public void onLocationReceive(boolean isSuccessful, LatLng location) {
+                        if (isSuccessful) {
+                            updateHotPoint(location.latitude, location.longitude);
+                        } else {
+                            Utils.setResultToToast(getContext(), "Add hop point on map failed!");
+                        }
+                    }
+                });
+            }
+        });
 
-        initSetAltitudeUI();
+    }
 
-        initSetRadiusUI();
+    private HotPointFragment getThis() {
+        return this;
+    }
 
-        initSetAngularSpeedUI();
-
-        initSelectHeadingUI();
+    private void updateHotPoint(double lat, double lng) {
+        if (!DJIMissionManager.checkValidGPSCoordinate(lat, lng)) {
+            Utils.setResultToToast(getContext(), "Invalid location(" + Double.toString(lat) + "," + Double.toString(lng) + ")");
+            return;
+        }
+        this.mLat = lat;
+        this.mLng = lng;
+        missionRequestMapHandler.sendUpdateSingleMakerRequestToMap(new LatLng(mLat, mLng));
     }
 
     private void initSetDirectionUI() {
@@ -130,7 +195,7 @@ public class HotPointFragment extends MissionFragment {
     private void initSetRadiusUI() {
         radiusTextView = (TextView) mView.findViewById(R.id.radius_textView);
         radiusSeekBar = (SeekBar) mView.findViewById(R.id.radius_seekBar);
-        radiusSeekBar.setMax(195);
+        radiusSeekBar.setMax(95);
         radiusSeekBar.setProgress((int) Math.round(mRadius - 5));
         radiusTextView.setText(Double.toString(mRadius) + " m");
         radiusSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -190,7 +255,6 @@ public class HotPointFragment extends MissionFragment {
         selectHeadingSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Utils.setResultToToast(getContext(), " position: " + Integer.toString(position)); //TODO delete after debug
                 switch (position) {
                     case 0:
                         mHeading = DJIHotPointMission.DJIHotPointHeading.TowardsHotPoint;
@@ -225,8 +289,7 @@ public class HotPointFragment extends MissionFragment {
 
     @Override
     protected void initMissionVariables() {
-        mLat = homeLat;
-        mLng = homeLng;
+        updateHotPoint(homeLat, homeLng);
         mAltitude = 20;
         mRadius = 10;
         mAngularVelocity = 20;
@@ -248,22 +311,46 @@ public class HotPointFragment extends MissionFragment {
         }
     }
 
+    @Override
+    protected void onUploadClickOperationSuccess() {
+
+        missionRequestMapHandler.sendDropSingleMarkerRequestToMap(new LatLng(mLat, mLng));
+        super.onUploadClickOperationSuccess();
+    }
+
+
+    @Override
+    protected void onStopClickOperationSuccess() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                currentLocationRadioButton.setChecked(true);
+            }
+        });
+
+        super.onStopClickOperationSuccess();
+    }
+
+    @Override
+    protected void finishMission() {
+        missionRequestMapHandler.sendCleanMarkersToMap();
+        super.finishMission();
+    }
+
+    @Override
+    public void onStop() {
+        missionRequestMapHandler.sendCleanMarkersToMap();
+        super.onStop();
+    }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     @Override
@@ -272,9 +359,4 @@ public class HotPointFragment extends MissionFragment {
     }
 
 
-    public interface OnFragmentInteractionListener {
-        void onHotPointSelected();
-
-        void onHotPointCancel();
-    }
 }

@@ -28,6 +28,7 @@ import android.widget.ToggleButton;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,7 +46,10 @@ import dji.sdk.base.DJIError;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraMode;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraShootPhotoMode;
 
-public class FPVActivity extends AppCompatActivity implements View.OnClickListener, MissionSelectionFragment.OnFragmentInteractionListener, MissionFragment.OnCancelClickListener {
+public class FPVActivity extends AppCompatActivity implements View.OnClickListener,
+        MissionSelectionFragment.OnFragmentInteractionListener,
+        MissionFragment.OnCancelClickListener,
+        MissionRequestMapHandler {
     String TAG = "FPVActivity";
     public static FragmentManager fragmentManager;
     public boolean isPhotoMode = true;
@@ -64,11 +68,96 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     private DJIBaseProduct mProduct = null;
     private DJICamera mCamera = null;
+
+    private AbleToHandleMarkerOnMap googleMapFragment;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+
+    private void requestPreconditionHandler() {
+        if (!FPVIsSmall) {
+            setFPVFragmentLarge(false);
+        }
+        googleMapFragment = (AbleToHandleMarkerOnMap) getSupportFragmentManager().findFragmentByTag(GoogleMapsFragment.class.getName());
+    }
+
+    @Override
+    public void sendCancelSetMarkerRequestToMap() {
+        requestPreconditionHandler();
+        googleMapFragment.cancelSetMarkerOnMap();
+    }
+
+    @Override
+    public void sendDropSingleMarkerRequestToMap(LatLng markLocation) {
+        requestPreconditionHandler();
+        googleMapFragment.dropSingleMarkerOnMap(markLocation);
+    }
+
+    @Override
+    public void sendDropMultipleMarkersRequestToMap(LatLng[] markLocations) {
+        requestPreconditionHandler();
+        googleMapFragment.dropMultipleMarkersOnMap(markLocations);
+    }
+
+    @Override
+    public void sendUpdateMultipleMarkerRequestToMap(LatLng[] newLocations) {
+        requestPreconditionHandler();
+        googleMapFragment.updateMultipleMarkerOnMap(newLocations);
+    }
+
+    @Override
+    public void sendUpdateSingleMakerRequestToMap(LatLng newLocation) {
+        requestPreconditionHandler();
+        googleMapFragment.updateSingleMakerOnMap(newLocation);
+    }
+
+    @Override
+    public void sendAddSingleMarkerRequestToMap(ReceiveSingleLocationCallBack receiveLocationCallBack) {
+        requestPreconditionHandler();
+        googleMapFragment.addSingleMarkerOnMap(receiveLocationCallBack);
+    }
+
+    @Override
+    public void sendAddMultipleMarkersRequestToMap(ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+        requestPreconditionHandler();
+        googleMapFragment.addMultipleMarkersOnMap(receiveLocationsCallBack);
+    }
+
+    @Override
+    public void sendAlterMarkersRequestToMap(LatLng[] markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+        requestPreconditionHandler();
+        googleMapFragment.alterMarkersOnMap(markerLocations, receiveLocationsCallBack);
+    }
+
+    @Override
+    public void sendCleanMarkersToMap() {
+        requestPreconditionHandler();
+        googleMapFragment.cleanMarkers();
+    }
+
+
+    public interface AbleToHandleMarkerOnMap {
+        void cancelSetMarkerOnMap();
+
+        void dropSingleMarkerOnMap(LatLng markLocation);
+
+        void dropMultipleMarkersOnMap(LatLng[] markLocations);
+
+        void updateMultipleMarkerOnMap(LatLng[] newLocations);
+
+        void updateSingleMakerOnMap(LatLng newLocation);
+
+        void alterMarkersOnMap(LatLng[] markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack);
+
+        void addSingleMarkerOnMap(ReceiveSingleLocationCallBack receiveLocationCallBack);
+
+        void addMultipleMarkersOnMap(ReceiveMultipleLocationsCallBack receiveLocationsCallBack);
+
+        void cleanMarkers();
+    }
+
 
     @Override
     public void onMissionTypeSelected(int i) {
@@ -136,8 +225,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             currentMissionFragment = null;
         }
         missionSelected = false;
-        missionSelectionWindowLayout.setVisibility(View.VISIBLE);
-        missionConsoleLayout.setVisibility(View.GONE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                missionSelectionWindowLayout.setVisibility(View.VISIBLE);
+                missionConsoleLayout.setVisibility(View.GONE);
+            }
+        });
     }
 
 
@@ -245,10 +339,10 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         showFPVFragment();
         showMapFragment();
         this.missionSelectionWindowLayout = (LinearLayout) findViewById(R.id.mission_window);
-//        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
+        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
         initMissionSelectionFragment();
         this.missionConsoleLayout = (LinearLayout) findViewById(R.id.mission_console_window);
-//        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
+        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
 
 
         checkConnectionStatus();
@@ -316,13 +410,15 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         swapViewIB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("swapViewIB", "================== >>> OnClickListener");
-                if (FPVIsSmall) {
-                    FPVIsSmall = false;
-                    setFPVFragmentLarge(true);
-                } else {
-                    FPVIsSmall = true;
-                    setFPVFragmentLarge(false);
+                if (!GoogleMapsFragment.isMakingChange && !GoogleMapsFragment.isAddMultiple && !GoogleMapsFragment.isAddSingle) {
+                    Log.e("swapViewIB", "================== >>> OnClickListener");
+                    if (FPVIsSmall) {
+                        FPVIsSmall = false;
+                        setFPVFragmentLarge(true);
+                    } else {
+                        FPVIsSmall = true;
+                        setFPVFragmentLarge(false);
+                    }
                 }
             }
         });
@@ -437,17 +533,19 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     private void setFPVFragmentLarge(boolean isLarge) {
         GoogleMapsFragment mapsFragment = (GoogleMapsFragment) getSupportFragmentManager().findFragmentByTag(GoogleMapsFragment.class.getName());
         DJIFPVFragment djifpvFragment = (DJIFPVFragment) getSupportFragmentManager().findFragmentByTag(DJIFPVFragment.class.getName());
-        getSupportFragmentManager().beginTransaction().remove(mapsFragment);
-        getSupportFragmentManager().beginTransaction().remove(djifpvFragment);
-        mapsFragment = GoogleMapsFragment.getGoogleMapsFragment();
+        getSupportFragmentManager().beginTransaction().remove(mapsFragment).commit();
+        getSupportFragmentManager().beginTransaction().remove(djifpvFragment).commit();
+        mapsFragment = GoogleMapsFragment.getGoogleMapsFragment(mapsFragment.singleMarker);
         djifpvFragment = DJIFPVFragment.getDJIFPVFragment();
         if (isLarge) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_window, djifpvFragment).commit();
-            getSupportFragmentManager().beginTransaction().replace(R.id.small_window, mapsFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_window, djifpvFragment, DJIFPVFragment.class.getName()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.small_window, mapsFragment, GoogleMapsFragment.class.getName()).commit();
+            FPVIsSmall = false;
 //            camFunctionsLayout.setVisibility(View.VISIBLE);
         } else {
-            getSupportFragmentManager().beginTransaction().replace(R.id.small_window, djifpvFragment).commit();
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_window, mapsFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.small_window, djifpvFragment, DJIFPVFragment.class.getName()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_window, mapsFragment, GoogleMapsFragment.class.getName()).commit();
+            FPVIsSmall = true;
 //            camFunctionsLayout.setVisibility(View.INVISIBLE);
         }
     }
@@ -455,7 +553,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     private void showMapFragment() {
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.small_window, GoogleMapsFragment.getGoogleMapsFragment(), GoogleMapsFragment.class.getName())
+                .add(R.id.small_window, GoogleMapsFragment.getGoogleMapsFragment(null), GoogleMapsFragment.class.getName())
                 .commit();
     }
 
@@ -521,7 +619,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 altTV.setText(Float.toString(alt));
                 modeTV.setText(mode);
                 satlTV.setText(Double.toString(satl));
-                if (mode.equals("F_GPS")) {
+                if (mode.equals("F_GPS") && alt > 5) {
                     if (!missionSelected)
                         missionSelectionWindowLayout.setVisibility(View.VISIBLE);
                     missionConsoleLayout.setVisibility(View.VISIBLE);
