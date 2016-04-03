@@ -6,9 +6,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,7 +52,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private TimerTask mTask;
     MapView mMapView;
     private GoogleMap mMap;
-    private SupportMapFragment mapFragment;
+    private AppCompatActivity fragmentActivity;
     double currentLat, currentLng, homeLat, homeLng, droneHeading;
     private Marker droneMarker, homeMarker;
     private MarkerOptions droneMarkerOptions, homeMarkerOptions;
@@ -95,6 +98,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_google_maps, container, false);
+        fragmentActivity = (AppCompatActivity) getActivity();
         mMapView = (MapView) view.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
@@ -234,6 +238,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     public void cleanMarkers() {
         if (singleMarker != null)
             singleMarker.remove();
+
         singleMarker = null;
         receiveSingleLocationCallBack = null;
         isMakingChange = false;

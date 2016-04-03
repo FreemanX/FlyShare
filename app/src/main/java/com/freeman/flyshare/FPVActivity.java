@@ -628,6 +628,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                     if (currentMissionFragment != null) {
                         getSupportFragmentManager().beginTransaction().remove(currentMissionFragment).commit();
                         currentMissionFragment = null;
+                        sendCleanMarkersToMap();
                     }
                     missionConsoleLayout.setVisibility(View.GONE);
                     missionSelected = false;

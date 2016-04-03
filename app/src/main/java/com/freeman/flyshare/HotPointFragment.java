@@ -90,18 +90,13 @@ public class HotPointFragment extends MissionFragment {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (checkedId == R.id.current_location_radioButton) {
-//                    getActivity().runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            setOnMapButton.setVisibility(View.GONE);
-//                        }
-//                    });
                     if (mFlightController != null) {
                         DJIFlightControllerDataType.DJIFlightControllerCurrentState currentState = mFlightController.getCurrentState();
                         updateHotPoint(currentState.getAircraftLocation().getLatitude(), currentState.getAircraftLocation().getLongitude());
                     } else
                         Utils.setResultToToast(getContext(), "FlightController is null");
                 } else if (checkedId == R.id.set_on_map_radioButton) {
+                    missionRequestMapHandler.sendDropSingleMarkerRequestToMap(new LatLng(mLat, mLng));
                     missionRequestMapHandler.sendAddSingleMarkerRequestToMap(new ReceiveSingleLocationCallBack() {
                         @Override
                         public void onLocationReceive(boolean isSuccessful, LatLng location) {
@@ -321,7 +316,7 @@ public class HotPointFragment extends MissionFragment {
 
     @Override
     protected void onStopClickOperationSuccess() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 currentLocationRadioButton.setChecked(true);

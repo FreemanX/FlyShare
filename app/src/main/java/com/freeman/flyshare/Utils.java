@@ -30,6 +30,7 @@ public class Utils {
     }
 
     public static void setResultToToast(final Context context, final String string) {
+        if (context == null || string == null) return;
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {

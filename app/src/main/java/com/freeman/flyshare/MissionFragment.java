@@ -32,14 +32,14 @@ import dji.sdk.base.DJIError;
  */
 public abstract class MissionFragment extends Fragment implements View.OnClickListener, DJIMissionManager.MissionProgressStatusCallback {
 
+    Activity fragmentActivity;
+
     LayoutInflater inflater;
     ViewGroup container;
     Bundle savedInstanceState;
 
     View mView;
     Button uploadButton, startButton, pauseButton, resumeButton, stopButton, cancelButton;
-    TextView progressTitleTextView;
-    ProgressBar progressBar;
     LinearLayout configLayout, ongoingLayout;
 
     OnCancelClickListener mFragmentActivity;
@@ -50,6 +50,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     DJIAircraft mAircraft;
     DJIFlightController mFlightController;
 
+    boolean djiExecutionResult = false;
 
     double homeLat, homeLng;
 
@@ -62,7 +63,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     protected abstract int getFragmentViewResource();
 
     protected void showMissionOngoingUI() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ongoingLayout.setVisibility(View.VISIBLE);
@@ -72,7 +73,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void hideMissionOngoingUI() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ongoingLayout.setVisibility(View.GONE);
@@ -82,7 +83,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void hideConfigMissionUI() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 configLayout.setVisibility(View.GONE);
@@ -92,7 +93,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void showConfigMissionUI() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 configLayout.setVisibility(View.VISIBLE);
@@ -111,6 +112,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         this.inflater = inflater;
         this.container = container;
         this.savedInstanceState = savedInstanceState;
+        fragmentActivity = getActivity();
         initBaseMissionVariables();
         initMissionVariables();
         mView = inflater.inflate(getFragmentViewResource(), container, false);
@@ -126,13 +128,13 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void initBaseMissionVariables() {
-        if (getActivity() instanceof MissionRequestMapHandler)
-            missionRequestMapHandler = (MissionRequestMapHandler) getActivity();
+        if (fragmentActivity instanceof MissionRequestMapHandler)
+            missionRequestMapHandler = (MissionRequestMapHandler) fragmentActivity;
         else
             throw new RuntimeException(getContext().toString() + "MissionRequestMapHandler must be implemented!");
 
-        if (getActivity() instanceof OnCancelClickListener)
-            mFragmentActivity = (OnCancelClickListener) getActivity();
+        if (fragmentActivity instanceof OnCancelClickListener)
+            mFragmentActivity = (OnCancelClickListener) fragmentActivity;
         else {
             throw new RuntimeException(getContext().toString() + "OnCancelClickListener must be implemented!");
         }
@@ -149,20 +151,8 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
 
     }
 
-    protected void hideProgressBar() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.INVISIBLE);
-                progressTitleTextView.setVisibility(View.INVISIBLE);
-            }
-        });
-    }
 
     protected void initBasicViewComponent(View view) {
-        progressTitleTextView = (TextView) view.findViewById(R.id.progress_bar_textView);
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        hideProgressBar();
         uploadButton = (Button) view.findViewById(R.id.upload_mission_button);
         startButton = (Button) view.findViewById(R.id.start_mission_button);
         pauseButton = (Button) view.findViewById(R.id.pause_mission_button);
@@ -367,6 +357,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                 break;
             case R.id.stop_mission_button:
                 onStopClicked();
+                final CountDownLatch countDownLatch = new CountDownLatch(1);
                 mMissionManager.stopMissionExecution(new DJIBaseComponent.DJICompletionCallback() {
                     @Override
                     public void onResult(DJIError mError) {
@@ -381,13 +372,24 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                             if (mMission instanceof DJIFollowMeMission) {
                                 stopUpdateFollowedObjectLocation();
                             }
+                            djiExecutionResult = true;
                         } else {
                             Utils.setResultToToast(getContext(), "Stop mission failed :" + mError.getDescription());
                             Log.e("StopMissionClicked", "Failed: " + mError.getDescription());
-                            finishMission();
+                            djiExecutionResult = false;
+                            countDownLatch.countDown();
                         }
                     }
                 });
+                try {
+                    countDownLatch.await(500, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+
+                }
+
+                if (!djiExecutionResult) {
+                    finishMission();
+                }
                 break;
             case R.id.cancel_mission_button:
                 finishMission();
@@ -399,7 +401,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
 
     protected void onUploadClickOperationSuccess() {
         hideConfigMissionUI();
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 uploadButton.setVisibility(View.GONE);
@@ -415,7 +417,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
 
     protected void onStartClickOperationSuccess() {
         showMissionOngoingUI();
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 uploadButton.setVisibility(View.GONE);
@@ -429,7 +431,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void onPauseClickOperationSuccess() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 uploadButton.setVisibility(View.GONE);
@@ -443,7 +445,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void onResumeClickOperationSuccess() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 uploadButton.setVisibility(View.GONE);
@@ -457,7 +459,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void onStopClickOperationSuccess() {
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 uploadButton.setVisibility(View.VISIBLE);
@@ -470,8 +472,6 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         });
         showConfigMissionUI();
         hideMissionOngoingUI();
-        hideProgressBar();
-
     }
 
 
