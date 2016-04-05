@@ -187,6 +187,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             case 3:
                 missionSelected = true;
+                currentMissionFragment = PanoMissionFragment.newInstance();
+                missionSelectionWindowLayout.setVisibility(View.GONE);
+                missionConsoleLayout.setVisibility(View.VISIBLE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.mission_console_window, currentMissionFragment, PanoMissionFragment.class.getName())
+                        .commit();
                 showToast("Panorama Mission selected");
                 break;
             case 4:
@@ -339,10 +346,10 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         showFPVFragment();
         showMapFragment();
         this.missionSelectionWindowLayout = (LinearLayout) findViewById(R.id.mission_window);
-        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
+//        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
         initMissionSelectionFragment();
         this.missionConsoleLayout = (LinearLayout) findViewById(R.id.mission_console_window);
-        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
+//        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
 
 
         checkConnectionStatus();
@@ -619,7 +626,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 altTV.setText(Float.toString(alt));
                 modeTV.setText(mode);
                 satlTV.setText(Double.toString(satl));
-                if (mode.equals("F_GPS") && alt > 5) {
+                if ((mode.equals("F_GPS") || mode.contains("Navi")) && alt > 5) {
                     if (!missionSelected)
                         missionSelectionWindowLayout.setVisibility(View.VISIBLE);
                     missionConsoleLayout.setVisibility(View.VISIBLE);

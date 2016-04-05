@@ -6,8 +6,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -27,7 +25,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -259,7 +256,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
             if (getActivity() == null) return;
             updateDroneInfo();
             drawDroneHomeOnMap();
-            getActivity().runOnUiThread(new Runnable() {
+            fragmentActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     cameraUpdate(false);
@@ -272,7 +269,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         @Override
         public void run() {
             updateDroneInfo();
-            getActivity().runOnUiThread(new Runnable() {
+            fragmentActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     drawDroneHomeOnMap();
@@ -364,7 +361,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         final PolylineOptions polylineOptions = new PolylineOptions().add(home, currentPosition).width(3).color(Color.RED);
 
 
-        getActivity().runOnUiThread(new Runnable() {
+        fragmentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (droneMarker != null) {

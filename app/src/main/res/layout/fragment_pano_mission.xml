@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.freeman.flyshare.HotPointFragment">
+    tools:context="com.freeman.flyshare.PanoMissionFragment">
 
     <LinearLayout
         android:layout_width="200dp"
@@ -15,20 +15,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Hot Point Mission"
+            android:text="Auto Panorama"
             android:textColor="#f3d0d0d0"
             android:textSize="22dp"
             android:textStyle="bold" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray" />
-
         <ScrollView
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
-            android:layout_height="235dp">
+            android:layout_height="200dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -36,6 +31,7 @@
                 android:layout_marginTop="5dp"
                 android:gravity="center"
                 android:orientation="vertical">
+
 
                 <LinearLayout
                     android:id="@+id/config_mission_layout"
@@ -48,57 +44,38 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"
-                        android:text="Hot Point"
+                        android:text="Select Mission:"
                         android:textColor="#f3d0d0d0"
                         android:textStyle="bold" />
 
                     <RadioGroup
-                        android:id="@+id/hot_point_select_radio_group"
+                        android:id="@+id/pano_mission_radio_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:orientation="vertical">
 
                         <RadioButton
-                            android:id="@+id/current_location_radioButton"
+                            android:id="@+id/pano180_radioButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Current location"
+                            android:text="180 Panorama"
                             android:textColor="#f3d0d0d0" />
 
                         <RadioButton
-                            android:id="@+id/set_on_map_radioButton"
+                            android:id="@+id/pano360_radioButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Set on Map"
+                            android:text="360 Panorama"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/pano720_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="720 Panorama"
                             android:textColor="#f3d0d0d0" />
                     </RadioGroup>
-
-                    <Button
-                        android:id="@+id/drop_marker_button"
-                        android:layout_width="100dp"
-                        android:layout_height="30dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="5dp"
-                        android:background="#000000"
-                        android:text="Set marker"
-                        android:textColor="#f3d0d0d0" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dp"
-                        android:text="Heading"
-                        android:textColor="#f3d0d0d0"
-                        android:textStyle="bold" />
-
-                    <!--spinner here-->
-                    <Spinner
-                        android:id="@+id/select_heading_spinner"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:background="#f3d0d0d0" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -133,87 +110,29 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"
-                        android:text="Radius: "
-                        android:textColor="#f3d0d0d0"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/radius_textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="5dp"
-                        android:text="1"
-                        android:textColor="#f3d0d0d0" />
-
-                    <SeekBar
-                        android:id="@+id/radius_seekBar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_marginTop="5dp"
-                        android:background="#4f000001"
-                        android:maxHeight="20dp"
-                        android:minHeight="20dp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dp"
-                        android:text="Angular Speed"
-                        android:textColor="#f3d0d0d0"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/angular_speed_textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="5dp"
-                        android:text="0 % of full speed"
-                        android:textColor="#f3d0d0d0" />
-
-                    <SeekBar
-                        android:id="@+id/angular_speed_seekBar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_marginTop="5dp"
-                        android:background="#4f000001"
-                        android:maxHeight="20dp"
-                        android:minHeight="20dp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dp"
-                        android:text="Direction"
+                        android:text="Hot Point"
                         android:textColor="#f3d0d0d0"
                         android:textStyle="bold" />
 
                     <RadioGroup
-                        android:id="@+id/hot_point_direction_radio_group"
+                        android:id="@+id/pano_point_select_radio_group"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:orientation="vertical">
 
                         <RadioButton
-                            android:id="@+id/clockwise_radioButton"
+                            android:id="@+id/current_location_radioButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Clockwise"
+                            android:text="Current location"
                             android:textColor="#f3d0d0d0" />
 
                         <RadioButton
-                            android:id="@+id/anticlockwise_radioButton"
+                            android:id="@+id/set_on_map_radioButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Anticlockwise"
+                            android:text="Set on Map"
                             android:textColor="#f3d0d0d0" />
                     </RadioGroup>
 
@@ -281,10 +200,6 @@
             </LinearLayout>
         </ScrollView>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray" />
 
         <Button
             android:id="@+id/cancel_mission_button"

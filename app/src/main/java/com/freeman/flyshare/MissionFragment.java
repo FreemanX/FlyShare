@@ -221,7 +221,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     }
 
     protected void finishMission() {
-        if (mMissionManager.getCurrentExecutingMission() != null) {
+        if (mMissionManager != null && mMissionManager.getCurrentExecutingMission() != null) {
             mMissionManager.stopMissionExecution(new DJIBaseComponent.DJICompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
@@ -268,6 +268,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                                 Utils.setResultToToast(getContext(), "Success!");
                             } else {
                                 Utils.setResultToToast(getContext(), "Prepare: " + djiError.getDescription());
+                                Log.e("upload_mission_button", "prepareMission: " + djiError.getDescription());
                             }
                         }
                     });
