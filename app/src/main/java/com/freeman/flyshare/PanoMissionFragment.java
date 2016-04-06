@@ -57,7 +57,7 @@ public class PanoMissionFragment extends MissionFragment {
                     if (missionHeading > 180)
                         missionHeading = missionHeading - 360;
                     waypoint0.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.RotateAircraft, missionHeading));
-//                    waypoint0.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                    waypoint0.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                 }
                 waypoint0.actionTimeoutInSeconds = 900;
                 waypointsList.add(waypoint0);
@@ -69,10 +69,10 @@ public class PanoMissionFragment extends MissionFragment {
                     int missionHeading = -180 + i * 30;
                     if (i < 7) {
                         waypoint1.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.RotateAircraft, missionHeading));
-//                        waypoint1.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                        waypoint1.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                     } else {
                         waypoint2.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.RotateAircraft, missionHeading));
-//                        waypoint2.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                        waypoint2.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                     }
                 }
                 waypoint1.actionTimeoutInSeconds = 900;
@@ -99,14 +99,14 @@ public class PanoMissionFragment extends MissionFragment {
                     int missionHeading = i * 30 - 180;
                     panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.RotateAircraft, missionHeading));
                     panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, 0));
-//                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                     panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, -30));
-//                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                     panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, -60));
-//                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                     if (i % 2 == 1) {
                         panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, -90));
-//                    panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
+                        panoWaypoint[i].addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto, 0));
                     }
                     panoWaypoint[i].actionTimeoutInSeconds = 900;
                     waypointsList.add(panoWaypoint[i]);
