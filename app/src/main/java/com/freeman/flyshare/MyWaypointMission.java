@@ -24,6 +24,7 @@ public class MyWaypointMission implements Serializable {
     private boolean needExitMissionOnRCSignalLost = false; //warn the user about this function
     private boolean needRotateGimbalPitch = false;
     private int repeatNum = 1; //[0, 255]
+    private DJIWaypointMission mWaypointMission;
 
     private boolean isAllSameAltitude = false;
     private float sameAltitude = 120f;
@@ -32,6 +33,12 @@ public class MyWaypointMission implements Serializable {
         this.missionPointLinkedList = new LinkedList<>();
         this.missionName = MissionName;
         this.missionDescription = MissionDescription;
+    }
+
+    public DJIWaypointMission initDJIWaypointMission() {
+        mWaypointMission = new DJIWaypointMission();
+        //TODO config all mission settings 
+        return mWaypointMission;
     }
 
     public boolean addWaypoint(MyWaypoint waypoint) {

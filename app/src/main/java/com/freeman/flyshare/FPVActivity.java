@@ -198,6 +198,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             case 4:
                 missionSelected = true;
+                currentMissionFragment = OwnMissionFragment.newInstance();
+                missionSelectionWindowLayout.setVisibility(View.GONE);
+                missionConsoleLayout.setVisibility(View.VISIBLE);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.mission_console_window, currentMissionFragment, OwnMissionFragment.class.getName())
+                        .commit();
                 showToast("Your Mission selected");
                 break;
             default:
@@ -588,7 +595,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void updateFlightControllerStatus() {
-
         if (mProduct != null && mProduct instanceof DJIAircraft) {
             mFlightController = ((DJIAircraft) mProduct).getFlightController();
             if (mFlightController == null) return;
@@ -631,13 +637,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                         missionSelectionWindowLayout.setVisibility(View.VISIBLE);
                     missionConsoleLayout.setVisibility(View.VISIBLE);
                 } else {
-                    missionSelectionWindowLayout.setVisibility(View.GONE);
+//                    missionSelectionWindowLayout.setVisibility(View.GONE); //TODO debug UI
                     if (currentMissionFragment != null) {
                         getSupportFragmentManager().beginTransaction().remove(currentMissionFragment).commit();
                         currentMissionFragment = null;
                         sendCleanMarkersToMap();
                     }
-                    missionConsoleLayout.setVisibility(View.GONE);
+//                    missionConsoleLayout.setVisibility(View.GONE);//TODO debug UI
                     missionSelected = false;
                 }
             }

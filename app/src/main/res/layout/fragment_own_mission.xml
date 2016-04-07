@@ -1,0 +1,330 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.freeman.flyshare.OwnMissionFragment">
+
+    <LinearLayout
+        android:layout_width="200dp"
+        android:layout_height="330dp"
+        android:background="#d61a1a1a"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Your Mission"
+            android:textColor="#f3d0d0d0"
+            android:textSize="22dp"
+            android:textStyle="bold" />
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/enter_config_mission_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/load_mission_button"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:background="#000000"
+                        android:text="Load Mission"
+                        android:textColor="#f3d0d0d0" />
+
+                    <Button
+                        android:id="@+id/create_mission_button"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:background="#000000"
+                        android:text="Create Mission"
+                        android:textColor="#f3d0d0d0" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/config_mission_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/edit_marks_button"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:background="#000000"
+                        android:text="Edit Points"
+                        android:textColor="#f3d0d0d0" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="5dp"
+                        android:text="When mission finished:"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/finish_action_radio_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/go_home_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Go Home"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/no_action_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No Action"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/go_first_point_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Stay in First Point"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/auto_land_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Land at Last Point"
+                            android:textColor="#f3d0d0d0" />
+                    </RadioGroup>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="5dp"
+                        android:text="Heading: "
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/heading_radio_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/auto_heading_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Auto"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/control_by_RC_heading_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Control by RC"
+                            android:textColor="#f3d0d0d0" />
+
+                        <RadioButton
+                            android:id="@+id/use_waypoint_heading_radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Use Waypoint Heading"
+                            android:textColor="#f3d0d0d0" />
+                    </RadioGroup>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="Maximum Speed"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/max_speed_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:text="1"
+                        android:textColor="#f3d0d0d0" />
+
+                    <SeekBar
+                        android:id="@+id/max_speed_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
+                        android:background="#4f000001"
+                        android:maxHeight="20dp"
+                        android:minHeight="20dp" />
+
+                    <CheckBox
+                        android:id="@+id/continue_when_RC_lost_checkbox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="Continue Even RC Lost"
+                        android:textColor="#f3d0d0d0" />
+
+                    <CheckBox
+                        android:id="@+id/auto_pitch_checkbox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="Auto Pitch Gimbal"
+                        android:textColor="#f3d0d0d0" />
+
+
+                    <CheckBox
+                        android:id="@+id/same_altitude_checkbox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="All Points Same Altitude"
+                        android:textColor="#f3d0d0d0" />
+
+                    <TextView
+                        android:id="@+id/altitude_title_textView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="Altitude"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/same_altitude_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:text="1"
+                        android:textColor="#f3d0d0d0" />
+
+                    <SeekBar
+                        android:id="@+id/same_altitude_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
+                        android:background="#4f000001"
+                        android:maxHeight="20dp"
+                        android:minHeight="20dp" />
+
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/upload_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Upload"
+                    android:textColor="#f3d0d0d0" />
+
+
+                <Button
+                    android:id="@+id/start_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Start"
+                    android:textColor="#f3d0d0d0" />
+
+                <Button
+                    android:id="@+id/pause_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Pause"
+                    android:textColor="#f3d0d0d0" />
+
+                <Button
+                    android:id="@+id/resume_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Resume"
+                    android:textColor="#f3d0d0d0" />
+
+                <LinearLayout
+                    android:id="@+id/ongoing_mission_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:orientation="vertical">
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/stop_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Stop"
+                    android:textColor="#f3d0d0d0" />
+
+            </LinearLayout>
+        </ScrollView>
+
+
+        <Button
+            android:id="@+id/cancel_mission_button"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="9dp"
+            android:background="#000000"
+            android:text="Cancel"
+            android:textColor="#f3d0d0d0" />
+
+
+    </LinearLayout>
+
+</FrameLayout>
