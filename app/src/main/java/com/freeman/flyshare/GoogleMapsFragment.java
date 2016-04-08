@@ -32,6 +32,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -62,9 +63,12 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private LatLng resultSingleLocation;
     Marker singleMarker;
 
+    //Parameters for waypoint mission
+    LinkedList<Marker> multipleMarkers;
+    LinkedList<MyWaypoint> missionPoints = null; //use for recovery
+    private Polyline missionPath = null;
 
     private ReceiveMultipleLocationsCallBack receiveMultipleLocationsCallBack;
-    private LatLng[] resultMultipleLocations;
 
     DJIBaseProduct mProduct;
 
@@ -76,10 +80,12 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         this.singleMarker = savedMarker;
     }
 
-    public static GoogleMapsFragment getGoogleMapsFragment(@Nullable Marker savedMarker) {
+    public static GoogleMapsFragment getGoogleMapsFragment(@Nullable Marker savedMarker, @Nullable LinkedList<MyWaypoint> savedMissionPoints) {
         GoogleMapsFragment fragment = new GoogleMapsFragment();
         if (savedMarker != null)
             fragment.setSingleMarker(savedMarker);
+        if (savedMissionPoints != null)
+            fragment.missionPoints = savedMissionPoints;
         return fragment;
     }
 
@@ -120,6 +126,18 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         return view;
     }
 
+    private void clearAllMarkers() {
+        fragmentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mMap.clear();
+                multipleMarkers = new LinkedList<>();
+                missionPath = null;
+                missionPoints = new LinkedList<>();
+            }
+        });
+    }
+
     private void initMarkerControlLayout(View v) {
         this.markerControlLinearLayout = (LinearLayout) v.findViewById(R.id.add_marker_layout);
         markerControlLinearLayout.setVisibility(View.GONE);
@@ -127,8 +145,14 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         this.addMarkersToggleButton = (ToggleButton) v.findViewById(R.id.add_markers_toggleButton);
         this.doneAddButton = (Button) v.findViewById(R.id.done_add_marker_button);
         this.clearAllMarkerButton = (Button) v.findViewById(R.id.clear_markers_button);
-        doneAddButton.setVisibility(View.GONE);
+        clearAllMarkerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearAllMarkers();
+            }
+        });
 
+        doneAddButton.setVisibility(View.GONE);
         doneAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,6 +162,14 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
                     else
                         receiveSingleLocationCallBack.onLocationReceive(false, null);
                 }
+
+                if (receiveMultipleLocationsCallBack != null) {
+                    if (missionPoints.size() > 0)
+                        receiveMultipleLocationsCallBack.onLocationReceive(true, missionPoints);
+                    else
+                        receiveMultipleLocationsCallBack.onLocationReceive(false, null);
+                }
+
                 markerControlLinearLayout.setVisibility(View.GONE);
                 isMakingChange = false;
             }
@@ -161,7 +193,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     isAddMultiple = true;
-                    doneAddButton.setVisibility(View.GONE);
+                    doneAddButton.setVisibility(View.INVISIBLE);
                 } else {
                     isAddMultiple = false;
                     doneAddButton.setVisibility(View.VISIBLE);
@@ -192,19 +224,20 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     }
 
     @Override
-    public void dropMultipleMarkersOnMap(LatLng[] markLocations) {
+    public void dropMultipleMarkersOnMap(LinkedList<MyWaypoint> markLocations) {
         isMakingChange = true;
+        this.missionPoints = markLocations;
         Utils.setResultToToast(getContext(), "dropMultipleMarkersOnMap");
     }
 
     @Override
-    public void updateMultipleMarkerOnMap(LatLng[] newLocations) {
+    public void updateMultipleMarkerOnMap(LinkedList<MyWaypoint> newLocations) {
         Utils.setResultToToast(getContext(), "updateMultipleMarkerOnMap");
+        this.missionPoints = newLocations;
     }
 
     @Override
     public void updateSingleMakerOnMap(LatLng newLocation) {
-
         Utils.setResultToToast(getContext(), "updateSingleMakerOnMap" + Double.toString(newLocation.latitude) + ", " + Double.toString(newLocation.longitude));
         if (singleMarker != null)
             singleMarker.remove();
@@ -213,7 +246,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     }
 
     @Override
-    public void alterMarkersOnMap(LatLng[] markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+    public void alterMarkersOnMap(LinkedList<MyWaypoint> markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
         Utils.setResultToToast(getContext(), "alterMarkersOnMap");
     }
 
@@ -227,8 +260,15 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     }
 
     @Override
-    public void addMultipleMarkersOnMap(ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+    public void addMultipleMarkersOnMap(ReceiveMultipleLocationsCallBack callBack) {
         Utils.setResultToToast(getContext(), "addMultipleMarkersOnMap");
+        this.receiveMultipleLocationsCallBack = callBack;
+        if (missionPoints == null)
+            missionPoints = new LinkedList<>();
+        if (multipleMarkers == null)
+            multipleMarkers = new LinkedList<>();
+        isMakingChange = true;
+        showMultiMarkersUI();
     }
 
     @Override
@@ -236,10 +276,32 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         if (singleMarker != null)
             singleMarker.remove();
 
+        if (multipleMarkers != null && multipleMarkers.size() > 0) {
+            for (Marker marker : multipleMarkers) {
+                marker.remove();
+            }
+        }
+
+        if (missionPath != null) {
+            missionPath.remove();
+        }
+
+        multipleMarkers = null;
+        missionPath = null;
+        missionPoints = null;
         singleMarker = null;
         receiveSingleLocationCallBack = null;
         isMakingChange = false;
         Utils.setResultToToast(getContext(), "cleanMarkers");
+    }
+
+    private void showMultiMarkersUI() {
+        addSingleMarkerToggleButton.setVisibility(View.GONE);
+        markerControlLinearLayout.setVisibility(View.VISIBLE);
+        addMarkersToggleButton.setVisibility(View.VISIBLE);
+        clearAllMarkerButton.setVisibility(View.VISIBLE);
+        doneAddButton.setVisibility(View.VISIBLE);
+        Log.e("GoogleMapsFragment", "================>> showMultiMarkersUI called!");
     }
 
     private void showSingleMarkerUI() {
@@ -323,12 +385,49 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
                     else
                         singleMarker.setPosition(latLng);
                 }
+
+                if (isAddMultiple) {
+                    if (missionPoints == null)
+                        missionPoints = new LinkedList<>();
+                    MyWaypoint newPoint = new MyWaypoint(missionPoints.size(), latLng);
+                    multipleMarkers.add(newPoint.getId(), mMap.addMarker(newPoint.getWaypointMarkerOptions()));
+                    missionPoints.add(newPoint);
+                    if (missionPath == null && missionPoints.size() > 1) {
+                        PolylineOptions polylineOptions = new PolylineOptions()
+                                .add(missionPoints.get(newPoint.getId() - 1).getLocation(), newPoint.getLocation())
+                                .width(5).color(Color.BLUE);
+                        missionPath = mMap.addPolyline(polylineOptions);
+                    } else if (missionPoints.size() > 1) {
+                        LinkedList<LatLng> missionPointsPosition = new LinkedList<>();
+                        for (int i = 0; i < missionPoints.size(); i++)
+                            missionPointsPosition.add(missionPoints.get(i).getLocation());
+                        missionPath.setPoints(missionPointsPosition);
+                    }
+                }
+
             }
         });
         if (this.singleMarker != null) {
             MarkerOptions markerOptions = new MarkerOptions().position(singleMarker.getPosition()).title(singleMarker.getTitle());
             singleMarker = mMap.addMarker(markerOptions);
         }
+
+        if (this.missionPoints != null) {
+            if (multipleMarkers == null)
+                multipleMarkers = new LinkedList<>();
+            PolylineOptions polylineOptions = new PolylineOptions().width(5).color(Color.BLUE);
+            for (MyWaypoint waypoint : missionPoints) {
+                this.multipleMarkers.add(mMap.addMarker(waypoint.getWaypointMarkerOptions()));
+                if (missionPoints.size() > 1) {
+                    polylineOptions.add(waypoint.getLocation());
+                }
+            }
+            if (missionPoints.size() > 1)
+                missionPath = mMap.addPolyline(polylineOptions);
+            else
+                missionPath = null;
+        }
+
         updateDroneInfo();
         drawDroneHomeOnMap();
         cameraUpdate(true);
@@ -415,6 +514,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     public void onStop() {
         mTask.cancel();
         Log.e("GoogleMapsFragment", "onResume()");
+        Log.e("GoogleMapsFragment", "================>> markerControlLinearLayout is visible: " + Boolean.toString(markerControlLinearLayout.getVisibility() == View.VISIBLE));
         super.onStop();
     }
 

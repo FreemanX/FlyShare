@@ -12,17 +12,19 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.util.LinkedList;
+
 import dji.sdk.MissionManager.DJIMission;
 import dji.sdk.MissionManager.DJIWaypointMission;
 
 
 public class OwnMissionFragment extends MissionFragment {
     private LinearLayout enterConfigMissionLinearLayout;
-    private Button loadMissionButton, createMissionButton, editPointButton;
+    private Button loadMissionButton, createMissionButton, editPointButton, saveMissionButton;
     private RadioGroup finishActionRadioGroup, headingRadioGroup;
     private RadioButton noActionRadioButton, controlByRCRadioButton;
-    private TextView maxSpeedTextView, allSameAltitudeTextView, allSameAltitudeTitleTextView;
-    private SeekBar maxSpeedSeekBar, allSameAltitudeSeekBar;
+    private TextView maxSpeedTextView, allSameAltitudeTextView, allSameAltitudeTitleTextView, repeatTimeTextView;
+    private SeekBar maxSpeedSeekBar, allSameAltitudeSeekBar, repeatTimeSeekBar;
     private CheckBox noRCContinueCheckBox, autoPitchGimbalCheckBox, allSameAltitudeCheckBox;
 
     private MyWaypointMission currentMission;
@@ -33,7 +35,18 @@ public class OwnMissionFragment extends MissionFragment {
 
     @Override
     protected DJIMission initMission() {
-        return null;
+        DJIWaypointMission djiWaypointMission = currentMission.initDJIWaypointMission();
+
+        if (mFlightController != null) {
+            float currentAlt = mFlightController.getCurrentState().getAircraftLocation().getAltitude();
+            if (currentAlt >= currentMission.getFirstAltitude()) {
+                currentMission.setGotoWaypointMode(DJIWaypointMission.DJIWaypointMissionGotoWaypointMode.Safely);
+            } else {
+                currentMission.setGotoWaypointMode(DJIWaypointMission.DJIWaypointMissionGotoWaypointMode.PointToPoint);
+            }
+        }
+
+        return djiWaypointMission;
     }
 
     @Override
@@ -101,14 +114,14 @@ public class OwnMissionFragment extends MissionFragment {
         maxSpeedTextView = (TextView) mView.findViewById(R.id.max_speed_textView);
         maxSpeedSeekBar = (SeekBar) mView.findViewById(R.id.max_speed_seekBar);
         maxSpeedSeekBar.setMax(13);
-        maxSpeedSeekBar.setProgress((int) (currentMission.getMaxFlightSpeed() - 2));
-        maxSpeedTextView.setText(Integer.toString((int) (currentMission.getMaxFlightSpeed())) + " m/s");
+        maxSpeedSeekBar.setProgress((int) (currentMission.getAutoFlightSpeed() - 2));
+        maxSpeedTextView.setText(Integer.toString((int) (currentMission.getAutoFlightSpeed())) + " m/s");
         maxSpeedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int speed = progress + 2;
                 maxSpeedTextView.setText(Integer.toString(speed) + " m/s");
-                currentMission.setMaxFlightSpeed(speed);
+                currentMission.setAutoFlightSpeed(speed);
             }
 
             @Override
@@ -182,6 +195,53 @@ public class OwnMissionFragment extends MissionFragment {
         allSameAltitudeTextView.setVisibility(View.GONE);
         allSameAltitudeSeekBar.setVisibility(View.GONE);
 
+        editPointButton = (Button) mView.findViewById(R.id.edit_marks_button);
+        editPointButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinkedList<MyWaypoint> locations = currentMission.getMissionPoints();
+                if (locations != null && locations.size() > 0)
+                    missionRequestMapHandler.sendDropMultipleMarkersRequestToMap(locations);
+                missionRequestMapHandler.sendAddMultipleMarkersRequestToMap(new ReceiveMultipleLocationsCallBack() {
+                    @Override
+                    public void onLocationReceive(boolean isSuccessful, LinkedList<MyWaypoint> locations) {
+                        if (isSuccessful) {
+                            currentMission.updateLocations(locations);
+                        }
+                        fragmentActivity.getSupportFragmentManager().beginTransaction().show(getThis()).commit();
+                    }
+                });
+
+                fragmentActivity.getSupportFragmentManager().beginTransaction().hide(getThis()).commit();
+
+            }
+        });
+
+        this.saveMissionButton = (Button) mView.findViewById(R.id.save_mission_button);
+
+        this.repeatTimeTextView = (TextView) mView.findViewById(R.id.repeat_time_textView);
+        this.repeatTimeSeekBar = (SeekBar) mView.findViewById(R.id.repeat_time_seekBar);
+
+        repeatTimeSeekBar.setMax(24);
+        repeatTimeSeekBar.setProgress(currentMission.getRepeatNum() - 1);
+        repeatTimeTextView.setText(Integer.toString(currentMission.getRepeatNum()));
+        repeatTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                repeatTimeTextView.setText(Integer.toString(progress + 1));
+                currentMission.setRepeatNum(progress + 1);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void initEnterConfigMissionUI() {
@@ -203,6 +263,18 @@ public class OwnMissionFragment extends MissionFragment {
                 uploadButton.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+    @Override
+    protected void onUploadClickOperationSuccess() {
+        super.onUploadClickOperationSuccess();
+        saveMissionButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onStartClickOperationSuccess() {
+        super.onStartClickOperationSuccess();
+        saveMissionButton.setVisibility(View.GONE);
     }
 
     @Override
@@ -231,6 +303,12 @@ public class OwnMissionFragment extends MissionFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
+    }
+
+    @Override
+    protected void finishMission() {
+        missionRequestMapHandler.sendCleanMarkersToMap();
+        super.finishMission();
     }
 
     @Override

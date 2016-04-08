@@ -30,6 +30,7 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -78,6 +79,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     private void requestPreconditionHandler() {
         if (!FPVIsSmall) {
+            Log.e("FPVActivity", "---------->> requestPreconditionHandler: !FPVIsSmall");
             setFPVFragmentLarge(false);
         }
         googleMapFragment = (AbleToHandleMarkerOnMap) getSupportFragmentManager().findFragmentByTag(GoogleMapsFragment.class.getName());
@@ -96,13 +98,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     @Override
-    public void sendDropMultipleMarkersRequestToMap(LatLng[] markLocations) {
+    public void sendDropMultipleMarkersRequestToMap(LinkedList<MyWaypoint> markLocations) {
         requestPreconditionHandler();
         googleMapFragment.dropMultipleMarkersOnMap(markLocations);
     }
 
     @Override
-    public void sendUpdateMultipleMarkerRequestToMap(LatLng[] newLocations) {
+    public void sendUpdateMultipleMarkerRequestToMap(LinkedList<MyWaypoint> newLocations) {
         requestPreconditionHandler();
         googleMapFragment.updateMultipleMarkerOnMap(newLocations);
     }
@@ -121,12 +123,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public void sendAddMultipleMarkersRequestToMap(ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+        Log.e("FPVActivity", "---------->> sendAddMultipleMarkersRequestToMap");
         requestPreconditionHandler();
         googleMapFragment.addMultipleMarkersOnMap(receiveLocationsCallBack);
     }
 
     @Override
-    public void sendAlterMarkersRequestToMap(LatLng[] markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
+    public void sendAlterMarkersRequestToMap(LinkedList<MyWaypoint> markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack) {
         requestPreconditionHandler();
         googleMapFragment.alterMarkersOnMap(markerLocations, receiveLocationsCallBack);
     }
@@ -143,13 +146,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
         void dropSingleMarkerOnMap(LatLng markLocation);
 
-        void dropMultipleMarkersOnMap(LatLng[] markLocations);
+        void dropMultipleMarkersOnMap(LinkedList<MyWaypoint> markLocations);
 
-        void updateMultipleMarkerOnMap(LatLng[] newLocations);
+        void updateMultipleMarkerOnMap(LinkedList<MyWaypoint> newLocations);
 
         void updateSingleMakerOnMap(LatLng newLocation);
 
-        void alterMarkersOnMap(LatLng[] markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack);
+        void alterMarkersOnMap(LinkedList<MyWaypoint> markerLocations, ReceiveMultipleLocationsCallBack receiveLocationsCallBack);
 
         void addSingleMarkerOnMap(ReceiveSingleLocationCallBack receiveLocationCallBack);
 
@@ -197,6 +200,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 showToast("Panorama Mission selected");
                 break;
             case 4:
+                requestPreconditionHandler();
                 missionSelected = true;
                 currentMissionFragment = OwnMissionFragment.newInstance();
                 missionSelectionWindowLayout.setVisibility(View.GONE);
@@ -545,29 +549,33 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void setFPVFragmentLarge(boolean isLarge) {
+        Log.e("FPVActivity", "---------->> setFPVFragmentLarge,start FPVIsSmall: " + Boolean.toString(FPVIsSmall));
         GoogleMapsFragment mapsFragment = (GoogleMapsFragment) getSupportFragmentManager().findFragmentByTag(GoogleMapsFragment.class.getName());
         DJIFPVFragment djifpvFragment = (DJIFPVFragment) getSupportFragmentManager().findFragmentByTag(DJIFPVFragment.class.getName());
         getSupportFragmentManager().beginTransaction().remove(mapsFragment).commit();
         getSupportFragmentManager().beginTransaction().remove(djifpvFragment).commit();
-        mapsFragment = GoogleMapsFragment.getGoogleMapsFragment(mapsFragment.singleMarker);
+        mapsFragment = GoogleMapsFragment.getGoogleMapsFragment(mapsFragment.singleMarker, mapsFragment.missionPoints);
         djifpvFragment = DJIFPVFragment.getDJIFPVFragment();
         if (isLarge) {
             getSupportFragmentManager().beginTransaction().replace(R.id.main_window, djifpvFragment, DJIFPVFragment.class.getName()).commit();
             getSupportFragmentManager().beginTransaction().replace(R.id.small_window, mapsFragment, GoogleMapsFragment.class.getName()).commit();
             FPVIsSmall = false;
+            Log.e("FPVActivity", "---------->> setFPVFragmentLarge, set to Large");
 //            camFunctionsLayout.setVisibility(View.VISIBLE);
         } else {
             getSupportFragmentManager().beginTransaction().replace(R.id.small_window, djifpvFragment, DJIFPVFragment.class.getName()).commit();
             getSupportFragmentManager().beginTransaction().replace(R.id.main_window, mapsFragment, GoogleMapsFragment.class.getName()).commit();
             FPVIsSmall = true;
+            Log.e("FPVActivity", "---------->> setFPVFragmentLarge, set to small");
 //            camFunctionsLayout.setVisibility(View.INVISIBLE);
         }
+        Log.e("FPVActivity", "---------->> setFPVFragmentLarge,end FPVIsSmall: " + Boolean.toString(FPVIsSmall));
     }
 
     private void showMapFragment() {
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.small_window, GoogleMapsFragment.getGoogleMapsFragment(null), GoogleMapsFragment.class.getName())
+                .add(R.id.small_window, GoogleMapsFragment.getGoogleMapsFragment(null, null), GoogleMapsFragment.class.getName())
                 .commit();
     }
 

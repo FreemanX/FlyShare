@@ -166,7 +166,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="5dp"
                         android:layout_marginLeft="5dp"
-                        android:text="Maximum Speed"
+                        android:text="Flight Speed"
                         android:textColor="#f3d0d0d0"
                         android:textStyle="bold" />
 
@@ -248,7 +248,38 @@
                         android:minHeight="20dp" />
 
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:text="Repeat Times"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/repeat_time_textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:text="1"
+                        android:textColor="#f3d0d0d0" />
+
+                    <SeekBar
+                        android:id="@+id/repeat_time_seekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
+                        android:background="#4f000001"
+                        android:maxHeight="20dp"
+                        android:minHeight="20dp" />
+
                 </LinearLayout>
+
 
                 <Button
                     android:id="@+id/upload_mission_button"
@@ -299,6 +330,17 @@
                     android:orientation="vertical">
 
                 </LinearLayout>
+
+                <Button
+                    android:id="@+id/save_mission_button"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="#000000"
+                    android:text="Save Mission"
+                    android:textColor="#f3d0d0d0"
+                    android:visibility="gone" />
 
                 <Button
                     android:id="@+id/stop_mission_button"

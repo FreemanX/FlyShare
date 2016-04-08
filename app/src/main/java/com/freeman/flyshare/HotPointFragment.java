@@ -131,7 +131,7 @@ public class HotPointFragment extends MissionFragment {
 
     }
 
-    private HotPointFragment getThis() {
+    protected HotPointFragment getThis() {
         return this;
     }
 

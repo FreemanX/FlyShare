@@ -179,7 +179,7 @@ public class PanoMissionFragment extends MissionFragment {
 
     }
 
-    private PanoMissionFragment getThis() {
+    protected PanoMissionFragment getThis() {
         return this;
     }
 

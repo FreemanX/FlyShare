@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +33,7 @@ import dji.sdk.base.DJIError;
  */
 public abstract class MissionFragment extends Fragment implements View.OnClickListener, DJIMissionManager.MissionProgressStatusCallback {
 
-    Activity fragmentActivity;
+    AppCompatActivity fragmentActivity;
 
     LayoutInflater inflater;
     ViewGroup container;
@@ -112,7 +113,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         this.inflater = inflater;
         this.container = container;
         this.savedInstanceState = savedInstanceState;
-        fragmentActivity = getActivity();
+        fragmentActivity = (AppCompatActivity) getActivity();
         initBaseMissionVariables();
         initMissionVariables();
         mView = inflater.inflate(getFragmentViewResource(), container, false);
@@ -125,6 +126,11 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
         }
         updateHomeLocation();
         return mView;
+    }
+
+
+    protected Fragment getThis() {
+        return this;
     }
 
     protected void initBaseMissionVariables() {

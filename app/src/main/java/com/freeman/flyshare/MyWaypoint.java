@@ -13,8 +13,8 @@ import dji.sdk.MissionManager.DJIWaypoint;
 public class MyWaypoint {
     final static float DEFAULT_ALTITUDE = 120f;
     final static short DEFAULT_HEADING = 0;
-    final static float DEFAULT_GIMBALPITCH = 0f;
-    final static float DEFAULT_CORNERRADIUSINMETERS = 0f;
+    final static short DEFAULT_GIMBALPITCH = 0;
+    final static float DEFAULT_CORNERRADIUSINMETERS = 0.5f;
 
     private int id;
     private MarkerOptions waypointMarkerOptions;
@@ -32,7 +32,16 @@ public class MyWaypoint {
         this.altitude = DEFAULT_ALTITUDE;
         this.waypointMarkerOptions = new MarkerOptions().position(location).title("Point " + Integer.toString(id));
         this.actionLinkedList = new LinkedList<>();
+        this.heading = DEFAULT_HEADING;
+        this.gimbalPitch = DEFAULT_GIMBALPITCH;
+    }
 
+    public void setAltitude(float inAltitude) {
+        this.altitude = inAltitude;
+    }
+
+    public float getAltitude() {
+        return this.altitude;
     }
 
     public short getGimbalPitch() {
@@ -87,6 +96,7 @@ public class MyWaypoint {
         }
         this.djiWaypoint.heading = this.heading;
         this.djiWaypoint.gimbalPitch = this.gimbalPitch;
+        this.djiWaypoint.cornerRadiusInMeters = DEFAULT_CORNERRADIUSINMETERS;
         return djiWaypoint;
     }
 

@@ -37,13 +37,41 @@ public class MyWaypointMission implements Serializable {
 
     public DJIWaypointMission initDJIWaypointMission() {
         mWaypointMission = new DJIWaypointMission();
-        //TODO config all mission settings 
+        mWaypointMission.autoFlightSpeed = autoFlightSpeed;
+        mWaypointMission.finishedAction = this.finishedAction;
+        mWaypointMission.flightPathMode = this.flightPathMode;
+        mWaypointMission.goFirstWaypointMode = this.gotoWaypointMode;
+        mWaypointMission.headingMode = this.headingMode;
+        mWaypointMission.maxFlightSpeed = this.maxFlightSpeed;
+        mWaypointMission.needExitMissionOnRCSignalLost = this.needExitMissionOnRCSignalLost;
+        mWaypointMission.needRotateGimbalPitch = this.needRotateGimbalPitch;
+        mWaypointMission.repeatNum = this.repeatNum;
+        mWaypointMission.flightPathMode = DJIWaypointMission.DJIWaypointMissionFlightPathMode.Curved;
+        for (MyWaypoint myWaypoint : missionPointLinkedList) {
+            if (isAllSameAltitude)
+                myWaypoint.setAltitude(sameAltitude);
+            mWaypointMission.addWaypoint(myWaypoint.initDjiWaypoint());
+        }
+
         return mWaypointMission;
     }
 
-    public boolean addWaypoint(MyWaypoint waypoint) {
-        if (this.missionPointLinkedList.size() > 90)
+    public LinkedList<MyWaypoint> getMissionPoints() {
+        return this.missionPointLinkedList;
+    }
+
+    public void updateLocations(LinkedList<MyWaypoint> newMissionPoints) {
+        this.missionPointLinkedList = newMissionPoints;
+    }
+
+    public float getFirstAltitude() {
+        return this.missionPointLinkedList.getFirst().getAltitude();
+    }
+
+    public boolean addWaypoint(LatLng location) {
+        if (this.missionPointLinkedList.size() > 98)
             return false;
+        MyWaypoint waypoint = new MyWaypoint(missionPointLinkedList.size(), location);
         this.missionPointLinkedList.add(waypoint);
         return true;
     }
