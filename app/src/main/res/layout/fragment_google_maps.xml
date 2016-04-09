@@ -56,6 +56,632 @@
             android:background="#c1000000"
             android:text="Submit to mission"
             android:textColor="#d8ffffff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/waypoint_config_layout"
+        android:layout_width="match_parent"
+        android:layout_height="450dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="350dp"
+        android:layout_marginRight="290dp"
+        android:layout_marginTop="40dp"
+        android:background="#d61a1a1a"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/point_info_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Point"
+            android:textColor="#f3d0d0d0"
+            android:textSize="22dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/delete_point_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:background="#750000"
+            android:text="Delete this Point"
+            android:textColor="#f9e7e7e7" />
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="300dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:text="Altitude"
+                    android:textColor="#f3d0d0d0"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/altitude_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:text="1"
+                    android:textColor="#f3d0d0d0" />
+
+                <SeekBar
+                    android:id="@+id/altitude_seekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:background="#4f000001"
+                    android:maxHeight="20dp"
+                    android:minHeight="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:text="Gimbal Pitch"
+                    android:textColor="#f3d0d0d0"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:text="Valid if auto pitch gimbal checked"
+                    android:textColor="#cad0d0d0" />
+
+                <TextView
+                    android:id="@+id/gimbal_pitch_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:text="1"
+                    android:textColor="#f3d0d0d0" />
+
+                <SeekBar
+                    android:id="@+id/gimbal_pitch_seekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:background="#4f000001"
+                    android:maxHeight="20dp"
+                    android:minHeight="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:text="Heading"
+                    android:textColor="#f3d0d0d0"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:text="Valid if use waypoint heading checked"
+                    android:textColor="#cad0d0d0" />
+
+                <TextView
+                    android:id="@+id/heading_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:text="1"
+                    android:textColor="#f3d0d0d0" />
+
+                <SeekBar
+                    android:id="@+id/heading_seekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:background="#4f000001"
+                    android:maxHeight="20dp"
+                    android:minHeight="20dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/has_action_checkBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:text="Has Action"
+                        android:textColor="#f3d0d0d0"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/add_action_button"
+                        android:layout_width="100dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="20dp"
+                        android:background="#000000"
+                        android:text="Add action"
+                        android:textColor="#f3d0d0d0"
+                        android:visibility="invisible" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/action_editor_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/action0_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:text="Action 1:"
+                            android:textColor="#f3d0d0d0"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/action0_type_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:background="#f3d0d0d0" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/action0_type_spinner"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/action0_param_textView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:text="Parameter: "
+                                android:textColor="#f3d0d0d0"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/action0_param_editText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/action0_type_spinner"
+                                android:layout_marginLeft="10dp"
+                                android:ems="3"
+                                android:inputType="number"
+                                android:textColor="#f3d0d0d0" />
+
+                            <Button
+                                android:id="@+id/delete_action0_button"
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="80dp"
+                                android:layout_height="35dp"
+                                android:layout_marginLeft="20dp"
+                                android:background="#750000"
+                                android:text="Delete"
+                                android:textColor="#f9e7e7e7" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/action1_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:text="Action 2:"
+                            android:textColor="#f3d0d0d0"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/action1_type_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:background="#f3d0d0d0" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/action1_type_spinner"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/action1_param_textView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:text="Parameter: "
+                                android:textColor="#f3d0d0d0"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/action1_param_editText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/action1_type_spinner"
+                                android:layout_marginLeft="10dp"
+                                android:ems="3"
+                                android:inputType="number"
+                                android:textColor="#f3d0d0d0" />
+
+                            <Button
+                                android:id="@+id/delete_action1_button"
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="80dp"
+                                android:layout_height="35dp"
+                                android:layout_marginLeft="20dp"
+                                android:background="#750000"
+                                android:text="Delete"
+                                android:textColor="#f9e7e7e7" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/action2_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:text="Action 3:"
+                            android:textColor="#f3d0d0d0"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/action2_type_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:background="#f3d0d0d0" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/action2_type_spinner"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/action2_param_textView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:text="Parameter: "
+                                android:textColor="#f3d0d0d0"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/action2_param_editText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/action2_type_spinner"
+                                android:layout_marginLeft="10dp"
+                                android:ems="3"
+                                android:inputType="number"
+                                android:textColor="#f3d0d0d0" />
+
+                            <Button
+                                android:id="@+id/delete_action2_button"
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="80dp"
+                                android:layout_height="35dp"
+                                android:layout_marginLeft="20dp"
+                                android:background="#750000"
+                                android:text="Delete"
+                                android:textColor="#f9e7e7e7" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/action3_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:text="Action 4:"
+                            android:textColor="#f3d0d0d0"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/action3_type_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:background="#f3d0d0d0" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/action3_type_spinner"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/action3_param_textView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:text="Parameter: "
+                                android:textColor="#f3d0d0d0"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/action3_param_editText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/action3_type_spinner"
+                                android:layout_marginLeft="10dp"
+                                android:ems="3"
+                                android:inputType="number"
+                                android:textColor="#f3d0d0d0" />
+
+                            <Button
+                                android:id="@+id/delete_action3_button"
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="80dp"
+                                android:layout_height="35dp"
+                                android:layout_marginLeft="20dp"
+                                android:background="#750000"
+                                android:text="Delete"
+                                android:textColor="#f9e7e7e7" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/action4_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:text="Action 5:"
+                            android:textColor="#f3d0d0d0"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/action4_type_spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:background="#f3d0d0d0" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/action4_type_spinner"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/action4_param_textView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:text="Parameter: "
+                                android:textColor="#f3d0d0d0"
+                                android:textStyle="bold" />
+
+                            <EditText
+                                android:id="@+id/action4_param_editText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/action4_type_spinner"
+                                android:layout_marginLeft="10dp"
+                                android:ems="3"
+                                android:inputType="number"
+                                android:textColor="#f3d0d0d0" />
+
+                            <Button
+                                android:id="@+id/delete_action4_button"
+                                style="?android:attr/buttonStyleSmall"
+                                android:layout_width="80dp"
+                                android:layout_height="35dp"
+                                android:layout_marginLeft="20dp"
+                                android:background="#750000"
+                                android:text="Delete"
+                                android:textColor="#f9e7e7e7" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@id/item_desc_textView"
+                            android:background="@android:color/darker_gray" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/save_setting_button"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_marginBottom="10dp"
+                android:background="#000000"
+                android:text="Save"
+                android:textColor="#f3d0d0d0" />
+
+            <Button
+                android:id="@+id/cancel_setting_button"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_marginBottom="10dp"
+                android:background="#000000"
+                android:text="Cancel"
+                android:textColor="#f3d0d0d0" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

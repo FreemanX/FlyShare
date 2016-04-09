@@ -357,10 +357,10 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         showFPVFragment();
         showMapFragment();
         this.missionSelectionWindowLayout = (LinearLayout) findViewById(R.id.mission_window);
-//        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
+        missionSelectionWindowLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
         initMissionSelectionFragment();
         this.missionConsoleLayout = (LinearLayout) findViewById(R.id.mission_console_window);
-//        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
+        missionConsoleLayout.setVisibility(View.GONE); //TODO for debug only, uncommon this later
 
 
         checkConnectionStatus();
@@ -645,13 +645,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                         missionSelectionWindowLayout.setVisibility(View.VISIBLE);
                     missionConsoleLayout.setVisibility(View.VISIBLE);
                 } else {
-//                    missionSelectionWindowLayout.setVisibility(View.GONE); //TODO debug UI
+                    missionSelectionWindowLayout.setVisibility(View.GONE); //TODO debug UI
                     if (currentMissionFragment != null) {
                         getSupportFragmentManager().beginTransaction().remove(currentMissionFragment).commit();
                         currentMissionFragment = null;
                         sendCleanMarkersToMap();
                     }
-//                    missionConsoleLayout.setVisibility(View.GONE);//TODO debug UI
+                    missionConsoleLayout.setVisibility(View.GONE);//TODO debug UI
                     missionSelected = false;
                 }
             }

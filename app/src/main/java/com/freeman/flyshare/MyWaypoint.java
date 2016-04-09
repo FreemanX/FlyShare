@@ -26,6 +26,8 @@ public class MyWaypoint {
     private short gimbalPitch; // used when DJIWaypointMission.rotateGimbalPitch is true
     private short heading; // only work with headingMode is set to DJIWaypointMissionHeadingUsingWaypointHeading
 
+    private boolean hasAction = false;
+
     public MyWaypoint(int ID, LatLng Location) {
         this.id = ID;
         this.location = Location;
@@ -34,6 +36,14 @@ public class MyWaypoint {
         this.actionLinkedList = new LinkedList<>();
         this.heading = DEFAULT_HEADING;
         this.gimbalPitch = DEFAULT_GIMBALPITCH;
+    }
+
+    public boolean isHasAction() {
+        return hasAction;
+    }
+
+    public void setHasAction(boolean hasAction) {
+        this.hasAction = hasAction;
     }
 
     public void setAltitude(float inAltitude) {
@@ -97,6 +107,7 @@ public class MyWaypoint {
         this.djiWaypoint.heading = this.heading;
         this.djiWaypoint.gimbalPitch = this.gimbalPitch;
         this.djiWaypoint.cornerRadiusInMeters = DEFAULT_CORNERRADIUSINMETERS;
+        this.djiWaypoint.hasAction = this.hasAction;
         return djiWaypoint;
     }
 

@@ -2,7 +2,9 @@ package com.freeman.flyshare;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -14,9 +16,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -32,12 +41,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import dji.sdk.FlightController.DJIFlightController;
 import dji.sdk.FlightController.DJIFlightControllerDataType;
+import dji.sdk.MissionManager.DJIWaypoint;
 import dji.sdk.Products.DJIAircraft;
 import dji.sdk.base.DJIBaseProduct;
 
@@ -62,6 +73,23 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private ReceiveSingleLocationCallBack receiveSingleLocationCallBack;
     private LatLng resultSingleLocation;
     Marker singleMarker;
+
+    // UI for configure mission point:
+    private LinearLayout waypointConfigLayout, actionEditorLayout;
+    private TextView pointInfoTextView, altitudeTextView, gimbalPitchTextView, headingTextView;
+    private Button pointDeletePointButton, pointAddActionButton, pointSaveButton, pointCancelButton;
+    private SeekBar altitudeSeekBar, gimbalPitchSeekBar, headingSeekBar;
+    private CheckBox hasActionCheckBox;
+    private int pointAltitude, pointGimbalPitch, pointHeading;
+    //UI for mission point actions
+    private int actionNum = 5;
+    private int[] actionParam = new int[actionNum];
+    private boolean pointHasAction;
+    LinkedList<DJIWaypoint.DJIWaypointAction> pointActionsLinkedList;
+    private LinearLayout[] actionConfigLinearLayout = new LinearLayout[actionNum];
+    private Spinner[] actionSpinner = new Spinner[actionNum];
+    private EditText[] actionParamEditText = new EditText[actionNum];
+    private Button[] actionDeleteButton = new Button[actionNum];
 
     //Parameters for waypoint mission
     LinkedList<Marker> multipleMarkers;
@@ -115,7 +143,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         homeMarkerOptions.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_home));
 
         initMarkerControlLayout(view);
-
+        initMissionPointConfigLayout(view);
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
@@ -134,6 +162,197 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
                 multipleMarkers = new LinkedList<>();
                 missionPath = null;
                 missionPoints = new LinkedList<>();
+            }
+        });
+    }
+
+    private void initMissionPointConfigLayout(View v) {
+        waypointConfigLayout = (LinearLayout) v.findViewById(R.id.waypoint_config_layout);
+//        waypointConfigLayout.setVisibility(View.GONE); //TODO debug: uncomment this later
+        actionEditorLayout = (LinearLayout) v.findViewById(R.id.action_editor_layout);
+        pointInfoTextView = (TextView) v.findViewById(R.id.point_info_textView);
+        pointDeletePointButton = (Button) v.findViewById(R.id.delete_point_button);
+        initWaypointAltitudeUI(v);
+        initWaypointGimbalPitchUI(v);
+        initWaypointHeadingUI(v);
+        initWaypointActionUI(v);
+    }
+
+    private void initWaypointActionUI(View view) {
+        //TODO tobe finished
+        hasActionCheckBox = (CheckBox) view.findViewById(R.id.has_action_checkBox);
+        hasActionCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                pointHasAction = isChecked;
+                if (pointHasAction) {
+                    pointAddActionButton.setVisibility(View.VISIBLE);
+                    actionEditorLayout.setVisibility(View.VISIBLE);
+                } else {
+                    pointAddActionButton.setVisibility(View.INVISIBLE);
+                    actionEditorLayout.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        pointAddActionButton = (Button) view.findViewById(R.id.add_action_button);
+        pointAddActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO add new action item to list view
+
+            }
+        });
+
+        initAction0UI(view);
+        initAction1UI(view);
+        initAction2UI(view);
+        initAction3UI(view);
+        initAction4UI(view);
+
+        for (int i = 0; i < actionNum; i++) {
+            actionSpinner[i].setAdapter(new ActionTypeSpinnerAdapter(getContext()));
+            final int actionIndex = i;
+            actionSpinner[i].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Utils.setResultToToast(getContext(), "Action " + Integer.toString(actionIndex) + ", Selected item: " + Integer.toString(position));
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+            actionDeleteButton[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Utils.setResultToToast(getContext(), "Action " + Integer.toString(actionIndex) + " Deleted");
+                }
+            });
+
+        }
+
+    }
+
+    class ActionTypeSpinnerAdapter extends BaseAdapter {
+        ArrayList<ActionTypeSpinnerSingleRow> itemList;
+        Context mContext;
+
+        public ActionTypeSpinnerAdapter(Context context) {
+            itemList = new ArrayList<>();
+            mContext = context;
+            Resources resources = context.getResources();
+            String[] titles = resources.getStringArray(R.array.waypoint_action_type);
+            String[] descriptions = resources.getStringArray(R.array.waypoint_action_type_description);
+            for (int i = 0; i < titles.length; i++) {
+                itemList.add(new ActionTypeSpinnerSingleRow(titles[i], descriptions[i]));
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return itemList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return itemList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View row = inflater.inflate(R.layout.action_name_des_spinner_item, parent, false);
+            TextView titleTextView = (TextView) row.findViewById(R.id.item_title_textView);
+            TextView descTextView = (TextView) row.findViewById(R.id.item_desc_textView);
+            titleTextView.setText(itemList.get(position).title);
+            descTextView.setText(itemList.get(position).description);
+            return row;
+        }
+    }
+
+    class ActionTypeSpinnerSingleRow {
+        String title;
+        String description;
+
+        public ActionTypeSpinnerSingleRow(String title, String description) {
+            this.title = title;
+            this.description = description;
+        }
+    }
+
+    private void initWaypointHeadingUI(View view) {
+        headingTextView = (TextView) view.findViewById(R.id.heading_textView);
+        headingSeekBar = (SeekBar) view.findViewById(R.id.heading_seekBar);
+        headingSeekBar.setMax(360);
+        headingSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pointHeading = progress - 180;
+                headingTextView.setText(Integer.toString(pointHeading) + " degrees");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
+
+    private void initWaypointGimbalPitchUI(View view) {
+        gimbalPitchTextView = (TextView) view.findViewById(R.id.gimbal_pitch_textView);
+        gimbalPitchSeekBar = (SeekBar) view.findViewById(R.id.gimbal_pitch_seekBar);
+        gimbalPitchSeekBar.setMax(90);
+        gimbalPitchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pointGimbalPitch = progress - 90;
+                gimbalPitchTextView.setText(Integer.toString(pointGimbalPitch) + " degrees");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
+
+    private void initWaypointAltitudeUI(View view) {
+        altitudeTextView = (TextView) view.findViewById(R.id.altitude_textView);
+        altitudeSeekBar = (SeekBar) view.findViewById(R.id.altitude_seekBar);
+        altitudeSeekBar.setMax(195);
+        altitudeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                pointAltitude = progress + 5;
+                altitudeTextView.setText(Integer.toString(pointAltitude) + " m");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
     }
@@ -348,6 +567,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+
         return false;
     }
 
@@ -529,4 +749,40 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         mTimer.schedule(mTask, 0, 400);
         super.onResume();
     }
+
+    private void initAction0UI(View view) {
+        actionConfigLinearLayout[0] = (LinearLayout) view.findViewById(R.id.action0_layout);
+        actionSpinner[0] = (Spinner) view.findViewById(R.id.action0_type_spinner);
+        actionParamEditText[0] = (EditText) view.findViewById(R.id.action0_param_editText);
+        actionDeleteButton[0] = (Button) view.findViewById(R.id.delete_action0_button);
+    }
+
+    private void initAction1UI(View view) {
+        actionConfigLinearLayout[1] = (LinearLayout) view.findViewById(R.id.action1_layout);
+        actionSpinner[1] = (Spinner) view.findViewById(R.id.action1_type_spinner);
+        actionParamEditText[1] = (EditText) view.findViewById(R.id.action1_param_editText);
+        actionDeleteButton[1] = (Button) view.findViewById(R.id.delete_action1_button);
+    }
+
+    private void initAction2UI(View view) {
+        actionConfigLinearLayout[2] = (LinearLayout) view.findViewById(R.id.action2_layout);
+        actionSpinner[2] = (Spinner) view.findViewById(R.id.action2_type_spinner);
+        actionParamEditText[2] = (EditText) view.findViewById(R.id.action2_param_editText);
+        actionDeleteButton[2] = (Button) view.findViewById(R.id.delete_action2_button);
+    }
+
+    private void initAction3UI(View view) {
+        actionConfigLinearLayout[3] = (LinearLayout) view.findViewById(R.id.action3_layout);
+        actionSpinner[3] = (Spinner) view.findViewById(R.id.action3_type_spinner);
+        actionParamEditText[3] = (EditText) view.findViewById(R.id.action3_param_editText);
+        actionDeleteButton[3] = (Button) view.findViewById(R.id.delete_action3_button);
+    }
+
+    private void initAction4UI(View view) {
+        actionConfigLinearLayout[4] = (LinearLayout) view.findViewById(R.id.action4_layout);
+        actionSpinner[4] = (Spinner) view.findViewById(R.id.action4_type_spinner);
+        actionParamEditText[4] = (EditText) view.findViewById(R.id.action4_param_editText);
+        actionDeleteButton[4] = (Button) view.findViewById(R.id.delete_action4_button);
+    }
+
 }
