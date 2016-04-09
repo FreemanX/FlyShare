@@ -81,6 +81,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private SeekBar altitudeSeekBar, gimbalPitchSeekBar, headingSeekBar;
     private CheckBox hasActionCheckBox;
     private int pointAltitude, pointGimbalPitch, pointHeading;
+    private int currentEditingWaypoint;
     //UI for mission point actions
     private int actionNum = 5;
     private int[] actionParam = new int[actionNum];
@@ -167,11 +168,11 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     }
 
     private void initMissionPointConfigLayout(View v) {
-        waypointConfigLayout = (LinearLayout) v.findViewById(R.id.waypoint_config_layout);
-//        waypointConfigLayout.setVisibility(View.GONE); //TODO debug: uncomment this later
         actionEditorLayout = (LinearLayout) v.findViewById(R.id.action_editor_layout);
         pointInfoTextView = (TextView) v.findViewById(R.id.point_info_textView);
         pointDeletePointButton = (Button) v.findViewById(R.id.delete_point_button);
+        pointSaveButton = (Button) v.findViewById(R.id.save_setting_button);
+        pointCancelButton = (Button) v.findViewById(R.id.cancel_setting_button);
         initWaypointAltitudeUI(v);
         initWaypointGimbalPitchUI(v);
         initWaypointHeadingUI(v);
@@ -233,7 +234,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
             });
 
         }
-
+        waypointConfigLayout = (LinearLayout) view.findViewById(R.id.waypoint_config_layout);
+        waypointConfigLayout.setVisibility(View.GONE); //TODO debug: uncomment this later
     }
 
     class ActionTypeSpinnerAdapter extends BaseAdapter {

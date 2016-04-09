@@ -314,7 +314,8 @@
                                 android:layout_marginLeft="20dp"
                                 android:background="#750000"
                                 android:text="Delete"
-                                android:textColor="#f9e7e7e7" />
+                                android:textColor="#f9e7e7e7"
+                                android:visibility="invisible" />
                         </LinearLayout>
 
                         <View
