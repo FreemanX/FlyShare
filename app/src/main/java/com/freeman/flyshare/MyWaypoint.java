@@ -38,11 +38,23 @@ public class MyWaypoint {
         this.gimbalPitch = DEFAULT_GIMBALPITCH;
     }
 
+    public void changeAction(int actionIndex, DJIWaypoint.DJIWaypointActionType actionType, int actionParam) {
+        this.actionLinkedList.set(actionIndex, new DJIWaypoint.DJIWaypointAction(actionType, actionParam));
+    }
+
+    public void setActionParams(int actionIndex, int actionParam) {
+        this.actionLinkedList.get(actionIndex).mActionParam = actionParam;
+    }
+
     public boolean isHasAction() {
         return hasAction;
     }
 
     public void setHasAction(boolean hasAction) {
+        if (hasAction) {
+            this.actionLinkedList = new LinkedList<>();
+            this.actionLinkedList.add(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, 0));
+        }
         this.hasAction = hasAction;
     }
 
@@ -68,6 +80,10 @@ public class MyWaypoint {
 
     public void setHeading(short heading) {
         this.heading = heading;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getId() {
@@ -126,4 +142,5 @@ public class MyWaypoint {
     public void setDjiWaypoint(DJIWaypoint djiWaypoint) {
         this.djiWaypoint = djiWaypoint;
     }
+
 }

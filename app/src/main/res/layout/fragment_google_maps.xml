@@ -303,7 +303,6 @@
                                 android:layout_below="@+id/action0_type_spinner"
                                 android:layout_marginLeft="10dp"
                                 android:ems="3"
-                                android:inputType="number"
                                 android:textColor="#f3d0d0d0" />
 
                             <Button
@@ -384,7 +383,6 @@
                                 android:layout_below="@+id/action1_type_spinner"
                                 android:layout_marginLeft="10dp"
                                 android:ems="3"
-                                android:inputType="number"
                                 android:textColor="#f3d0d0d0" />
 
                             <Button
@@ -464,7 +462,7 @@
                                 android:layout_below="@+id/action2_type_spinner"
                                 android:layout_marginLeft="10dp"
                                 android:ems="3"
-                                android:inputType="number"
+
                                 android:textColor="#f3d0d0d0" />
 
                             <Button
@@ -544,7 +542,6 @@
                                 android:layout_below="@+id/action3_type_spinner"
                                 android:layout_marginLeft="10dp"
                                 android:ems="3"
-                                android:inputType="number"
                                 android:textColor="#f3d0d0d0" />
 
                             <Button
@@ -624,7 +621,6 @@
                                 android:layout_below="@+id/action4_type_spinner"
                                 android:layout_marginLeft="10dp"
                                 android:ems="3"
-                                android:inputType="number"
                                 android:textColor="#f3d0d0d0" />
 
                             <Button

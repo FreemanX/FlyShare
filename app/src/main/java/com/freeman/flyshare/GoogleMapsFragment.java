@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,13 +81,10 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     private Button pointDeletePointButton, pointAddActionButton, pointSaveButton, pointCancelButton;
     private SeekBar altitudeSeekBar, gimbalPitchSeekBar, headingSeekBar;
     private CheckBox hasActionCheckBox;
-    private int pointAltitude, pointGimbalPitch, pointHeading;
-    private int currentEditingWaypoint;
+    MyWaypoint tmpEditingPoint;
+    private int currentEditingWaypointIndex;
     //UI for mission point actions
     private int actionNum = 5;
-    private int[] actionParam = new int[actionNum];
-    private boolean pointHasAction;
-    LinkedList<DJIWaypoint.DJIWaypointAction> pointActionsLinkedList;
     private LinearLayout[] actionConfigLinearLayout = new LinearLayout[actionNum];
     private Spinner[] actionSpinner = new Spinner[actionNum];
     private EditText[] actionParamEditText = new EditText[actionNum];
@@ -168,30 +166,95 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
     }
 
     private void initMissionPointConfigLayout(View v) {
-        actionEditorLayout = (LinearLayout) v.findViewById(R.id.action_editor_layout);
+        waypointConfigLayout = (LinearLayout) v.findViewById(R.id.waypoint_config_layout);
+        waypointConfigLayout.setVisibility(View.GONE); //TODO debug: uncomment this when not debug
         pointInfoTextView = (TextView) v.findViewById(R.id.point_info_textView);
+
         pointDeletePointButton = (Button) v.findViewById(R.id.delete_point_button);
+        pointDeletePointButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                waypointConfigLayout.setVisibility(View.GONE);
+                markerControlLinearLayout.setVisibility(View.VISIBLE);
+                if (missionPoints.get(currentEditingWaypointIndex) != null) {
+                    multipleMarkers.remove(currentEditingWaypointIndex).remove();
+                    missionPoints.remove(currentEditingWaypointIndex);
+                    LinkedList<LatLng> pointsLocation = new LinkedList<>();
+                    for (int i = 0; i < missionPoints.size(); i++) {
+                        missionPoints.get(i).setId(i);
+                        multipleMarkers.get(i).setTitle("Point " + Integer.toString(i));
+                        pointsLocation.add(missionPoints.get(i).getLocation());
+                    }
+                    missionPath.setPoints(pointsLocation);
+                }
+                initPointSettings();
+            }
+        });
         pointSaveButton = (Button) v.findViewById(R.id.save_setting_button);
+        pointSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tmpEditingPoint.isHasAction()) {
+                    for (int i = 0; i < tmpEditingPoint.getActionLinkedList().size(); i++) {
+                        String paramStr = actionParamEditText[i].getText().toString();
+                        int param = 0;
+                        if (paramStr.length() > 0) {
+                            param = Integer.parseInt(paramStr);
+                        }
+                        tmpEditingPoint.setActionParams(i, param);
+                    }
+                }
+                missionPoints.set(currentEditingWaypointIndex, tmpEditingPoint);
+                initPointSettings();
+            }
+        });
+
         pointCancelButton = (Button) v.findViewById(R.id.cancel_setting_button);
+        pointCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initPointSettings();
+            }
+        });
         initWaypointAltitudeUI(v);
         initWaypointGimbalPitchUI(v);
         initWaypointHeadingUI(v);
         initWaypointActionUI(v);
     }
 
+    private void initPointSettings() {
+        for (int i = 0; i < actionNum; i++) {
+            actionSpinner[i].setSelection(0);
+            actionParamEditText[i].setText("");
+            if (i != 0)
+                actionConfigLinearLayout[i].setVisibility(View.GONE);
+        }
+        waypointConfigLayout.setVisibility(View.GONE);
+        markerControlLinearLayout.setVisibility(View.VISIBLE);
+    }
+
     private void initWaypointActionUI(View view) {
-        //TODO tobe finished
+        actionEditorLayout = (LinearLayout) view.findViewById(R.id.action_editor_layout);
+        actionEditorLayout.setVisibility(View.INVISIBLE);
         hasActionCheckBox = (CheckBox) view.findViewById(R.id.has_action_checkBox);
         hasActionCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                pointHasAction = isChecked;
-                if (pointHasAction) {
+                tmpEditingPoint.setHasAction(isChecked);
+                if (isChecked) {
                     pointAddActionButton.setVisibility(View.VISIBLE);
                     actionEditorLayout.setVisibility(View.VISIBLE);
+                    tmpEditingPoint.removeAllActions();
+                    tmpEditingPoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, 0));
                 } else {
                     pointAddActionButton.setVisibility(View.INVISIBLE);
                     actionEditorLayout.setVisibility(View.GONE);
+                    for (int i = 0; i < 5; i++) {
+                        actionParamEditText[i].setText("");
+                        actionSpinner[i].setSelection(0);
+                        if (i != 0)
+                            actionConfigLinearLayout[i].setVisibility(View.GONE);
+                    }
                 }
             }
         });
@@ -200,8 +263,16 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         pointAddActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO add new action item to list view
-
+                if (tmpEditingPoint.getActionLinkedList().size() < 5) {
+                    if (tmpEditingPoint.getActionLinkedList().size() > 0) {
+                        actionDeleteButton[tmpEditingPoint.getActionLinkedList().size() - 1].setVisibility(View.INVISIBLE);
+                        actionConfigLinearLayout[tmpEditingPoint.getActionLinkedList().size()].setVisibility(View.VISIBLE);
+                        actionSpinner[tmpEditingPoint.getActionLinkedList().size()].setSelection(0);
+                    } else {
+                        actionSpinner[0].setSelection(0);
+                    }
+                    tmpEditingPoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, 0));
+                }
             }
         });
 
@@ -213,29 +284,30 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
         for (int i = 0; i < actionNum; i++) {
             actionSpinner[i].setAdapter(new ActionTypeSpinnerAdapter(getContext()));
-            final int actionIndex = i;
-            actionSpinner[i].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    Utils.setResultToToast(getContext(), "Action " + Integer.toString(actionIndex) + ", Selected item: " + Integer.toString(position));
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
-
-            actionDeleteButton[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Utils.setResultToToast(getContext(), "Action " + Integer.toString(actionIndex) + " Deleted");
-                }
-            });
-
+            if (i != 0) {
+                actionConfigLinearLayout[i].setVisibility(View.GONE);
+            }
+            actionParamEditText[i].setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
         }
-        waypointConfigLayout = (LinearLayout) view.findViewById(R.id.waypoint_config_layout);
-        waypointConfigLayout.setVisibility(View.GONE); //TODO debug: uncomment this later
+    }
+
+    private DJIWaypoint.DJIWaypointActionType positionToActionType(int position) {
+        switch (position) {
+            case 0:
+                return DJIWaypoint.DJIWaypointActionType.GimbalPitch;
+            case 1:
+                return DJIWaypoint.DJIWaypointActionType.RotateAircraft;
+            case 2:
+                return DJIWaypoint.DJIWaypointActionType.StartTakePhoto;
+            case 3:
+                return DJIWaypoint.DJIWaypointActionType.StartRecord;
+            case 4:
+                return DJIWaypoint.DJIWaypointActionType.StopRecord;
+            case 5:
+                return DJIWaypoint.DJIWaypointActionType.Stay;
+            default:
+                return null;
+        }
     }
 
     class ActionTypeSpinnerAdapter extends BaseAdapter {
@@ -297,8 +369,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         headingSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                pointHeading = progress - 180;
-                headingTextView.setText(Integer.toString(pointHeading) + " degrees");
+                tmpEditingPoint.setHeading((short) (progress - 180));
+                headingTextView.setText(Integer.toString(progress - 180) + " degrees");
             }
 
             @Override
@@ -320,7 +392,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         gimbalPitchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                pointGimbalPitch = progress - 90;
+                int pointGimbalPitch = progress - 90;
+                tmpEditingPoint.setGimbalPitch((short) pointGimbalPitch);
                 gimbalPitchTextView.setText(Integer.toString(pointGimbalPitch) + " degrees");
             }
 
@@ -343,7 +416,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         altitudeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                pointAltitude = progress + 5;
+                int pointAltitude = progress + 5;
+                tmpEditingPoint.setAltitude(pointAltitude);
                 altitudeTextView.setText(Integer.toString(pointAltitude) + " m");
             }
 
@@ -364,7 +438,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         markerControlLinearLayout.setVisibility(View.GONE);
         this.addSingleMarkerToggleButton = (ToggleButton) v.findViewById(R.id.add_single_marker_toggleButton);
         this.addMarkersToggleButton = (ToggleButton) v.findViewById(R.id.add_markers_toggleButton);
-        this.doneAddButton = (Button) v.findViewById(R.id.done_add_marker_button);
+
         this.clearAllMarkerButton = (Button) v.findViewById(R.id.clear_markers_button);
         clearAllMarkerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -373,10 +447,13 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
             }
         });
 
+        this.doneAddButton = (Button) v.findViewById(R.id.done_add_marker_button);
         doneAddButton.setVisibility(View.GONE);
         doneAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!isMakingChange)
+                    return;
                 if (receiveSingleLocationCallBack != null) {
                     if (Utils.checkGpsCoordinate(resultSingleLocation.latitude, resultSingleLocation.longitude))
                         receiveSingleLocationCallBack.onLocationReceive(true, resultSingleLocation);
@@ -569,8 +646,51 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-
+        if (isMakingChange && multipleMarkers != null && multipleMarkers.size() > 0 && !isAddMultiple) {
+            markerControlLinearLayout.setVisibility(View.GONE);
+            pointInfoTextView.setText(marker.getTitle());
+            currentEditingWaypointIndex = Integer.parseInt(marker.getTitle().split(" ")[1]);
+            waypointConfigLayout.setVisibility(View.VISIBLE);
+            initWaypointSetting();
+        }
         return false;
+    }
+
+    private void initWaypointSetting() {
+        tmpEditingPoint = this.missionPoints.get(currentEditingWaypointIndex);
+        altitudeSeekBar.setProgress(Math.round(tmpEditingPoint.getAltitude() - 5));
+        altitudeTextView.setText(Float.toString(tmpEditingPoint.getAltitude()) + " m");
+        gimbalPitchSeekBar.setProgress(tmpEditingPoint.getGimbalPitch() + 90);
+        gimbalPitchTextView.setText(Short.toString(tmpEditingPoint.getGimbalPitch()) + " degrees");
+        headingTextView.setText(Short.toString(tmpEditingPoint.getHeading()) + " degrees");
+        headingSeekBar.setProgress(tmpEditingPoint.getHeading() + 180);
+        hasActionCheckBox.setChecked(tmpEditingPoint.isHasAction());
+        if (tmpEditingPoint.isHasAction()) {
+            actionEditorLayout.setVisibility(View.VISIBLE);
+            LinkedList<DJIWaypoint.DJIWaypointAction> pointActionsLinkedList = tmpEditingPoint.getActionLinkedList();
+            for (int i = 0; i < pointActionsLinkedList.size(); i++) {
+                actionConfigLinearLayout[i].setVisibility(View.VISIBLE);
+                actionSpinner[i].setSelection(actionTypeToPosition(pointActionsLinkedList.get(i)));
+                actionParamEditText[i].setText(Integer.toString(pointActionsLinkedList.get(i).mActionParam));
+            }
+        }
+    }
+
+    private int actionTypeToPosition(DJIWaypoint.DJIWaypointAction action) {
+        if (action.mActionType == DJIWaypoint.DJIWaypointActionType.GimbalPitch)
+            return 0;
+        else if (action.mActionType == DJIWaypoint.DJIWaypointActionType.RotateAircraft)
+            return 1;
+        else if (action.mActionType == DJIWaypoint.DJIWaypointActionType.StartTakePhoto)
+            return 2;
+        else if (action.mActionType == DJIWaypoint.DJIWaypointActionType.StartRecord)
+            return 3;
+        else if (action.mActionType == DJIWaypoint.DJIWaypointActionType.StopRecord)
+            return 4;
+        else if (action.mActionType == DJIWaypoint.DJIWaypointActionType.Stay)
+            return 5;
+        else
+            return -1;
     }
 
     @Override
@@ -757,6 +877,20 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         actionSpinner[0] = (Spinner) view.findViewById(R.id.action0_type_spinner);
         actionParamEditText[0] = (EditText) view.findViewById(R.id.action0_param_editText);
         actionDeleteButton[0] = (Button) view.findViewById(R.id.delete_action0_button);
+        actionSpinner[0].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    tmpEditingPoint.changeAction(0, positionToActionType(position), 0);
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     private void initAction1UI(View view) {
@@ -764,6 +898,30 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         actionSpinner[1] = (Spinner) view.findViewById(R.id.action1_type_spinner);
         actionParamEditText[1] = (EditText) view.findViewById(R.id.action1_param_editText);
         actionDeleteButton[1] = (Button) view.findViewById(R.id.delete_action1_button);
+
+        actionSpinner[1].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    tmpEditingPoint.changeAction(1, positionToActionType(position), 0);
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        actionDeleteButton[1].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tmpEditingPoint.removeAction(1);
+                actionConfigLinearLayout[1].setVisibility(View.GONE);
+                actionDeleteButton[0].setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void initAction2UI(View view) {
@@ -771,6 +929,29 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         actionSpinner[2] = (Spinner) view.findViewById(R.id.action2_type_spinner);
         actionParamEditText[2] = (EditText) view.findViewById(R.id.action2_param_editText);
         actionDeleteButton[2] = (Button) view.findViewById(R.id.delete_action2_button);
+        actionSpinner[2].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    tmpEditingPoint.changeAction(2, positionToActionType(position), 0);
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        actionDeleteButton[2].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tmpEditingPoint.removeAction(2);
+                actionConfigLinearLayout[2].setVisibility(View.GONE);
+                actionDeleteButton[1].setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void initAction3UI(View view) {
@@ -778,6 +959,30 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         actionSpinner[3] = (Spinner) view.findViewById(R.id.action3_type_spinner);
         actionParamEditText[3] = (EditText) view.findViewById(R.id.action3_param_editText);
         actionDeleteButton[3] = (Button) view.findViewById(R.id.delete_action3_button);
+
+        actionSpinner[3].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    tmpEditingPoint.changeAction(3, positionToActionType(position), 0);
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        actionDeleteButton[3].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tmpEditingPoint.removeAction(3);
+                actionConfigLinearLayout[3].setVisibility(View.GONE);
+                actionDeleteButton[2].setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void initAction4UI(View view) {
@@ -785,6 +990,29 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
         actionSpinner[4] = (Spinner) view.findViewById(R.id.action4_type_spinner);
         actionParamEditText[4] = (EditText) view.findViewById(R.id.action4_param_editText);
         actionDeleteButton[4] = (Button) view.findViewById(R.id.delete_action4_button);
+        actionSpinner[4].setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    tmpEditingPoint.changeAction(4, positionToActionType(position), 0);
+                } catch (Exception e) {
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        actionDeleteButton[4].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tmpEditingPoint.removeAction(4);
+                actionConfigLinearLayout[4].setVisibility(View.GONE);
+                actionDeleteButton[3].setVisibility(View.VISIBLE);
+            }
+        });
     }
 
 }

@@ -278,6 +278,11 @@ public class OwnMissionFragment extends MissionFragment {
     }
 
     @Override
+    protected void onStopClickOperationSuccess() {
+        super.onStopClickOperationSuccess();
+    }
+
+    @Override
     protected void initMissionVariables() {
         currentMission = new MyWaypointMission("", "");
     }

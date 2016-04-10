@@ -32,7 +32,7 @@
         <item>Parameter ignored</item>
         <item>Parameter ignored</item>
         <item>Parameter ignored</item>
-        <item>Parameter range: [0, 30] seconds. Default: 15</item>
+        <item>Parameter range: [0, 30] seconds. Default: 0</item>
     </string-array>
 
 </resources>
