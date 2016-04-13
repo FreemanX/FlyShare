@@ -18,7 +18,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="20dp"
-            android:text="Camera mode"
+            android:text="Camera Exposure mode"
             android:textColor="#dcffffff"
             android:textSize="20dp"
             android:textStyle="bold" />

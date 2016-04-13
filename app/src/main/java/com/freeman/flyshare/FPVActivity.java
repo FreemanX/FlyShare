@@ -55,11 +55,13 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     public static FragmentManager fragmentManager;
     public boolean isPhotoMode = true;
     public static boolean FPVIsSmall = false;
-    private boolean cameraConfigIsShow, missionSelected = false;
+    private boolean cameraConfigIsShow, cameraSettingIsShow, missionSelected, isTakingIntervalPhoto = false;
     private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB, takeOffButton, landingButton;
     private Button takePhotoBtn;
     private ToggleButton takeVideoBtn;
-    private LinearLayout camFunctionsLayout, statusBarLayout, recordVideoBarLayout, smallFragmentLayout, missionSelectionWindowLayout, missionConsoleLayout;
+    private LinearLayout camFunctionsLayout, statusBarLayout,
+            recordVideoBarLayout, smallFragmentLayout,
+            missionSelectionWindowLayout, missionConsoleLayout;
     private TextView altTV, modeTV, connectionTV, powerTV, satlTV, recordTimeTV;
     private ImageView videoDot;
     private MissionFragment currentMissionFragment;
@@ -69,6 +71,12 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     private DJIBaseProduct mProduct = null;
     private DJICamera mCamera = null;
+    private CameraMode cameraMode = CameraMode.ShootPhoto;
+    private CameraShootPhotoMode shootPhotoMode = CameraShootPhotoMode.Single;
+
+    public void setShootPhotoMode(CameraShootPhotoMode shootPhotoMode) {
+        this.shootPhotoMode = shootPhotoMode;
+    }
 
     private AbleToHandleMarkerOnMap googleMapFragment;
     /**
@@ -315,8 +323,8 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
 
     private void initDroneState() {
         stopRecord();
-        setCameraMode(0);
-        setCameraMode(0);
+        setShootPhotoMode(0);
+        setShootPhotoMode(0);
         if (mProduct == null || mProduct.getCamera() == null) return;
         mProduct.getCamera().setExposureMode(DJICameraSettingsDef.CameraExposureMode.Program, new DJICompletionCallback() {
             @Override
@@ -498,7 +506,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             @Override
             public void onClick(View v) {
                 showToast("Camera Config clicked");
-                if (!cameraConfigIsShow)
+                if (!cameraConfigIsShow && !cameraSettingIsShow)
                     showCameraConfig();
                 else
                     hideCameraConfig();
@@ -506,8 +514,17 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         });
 
         shootModeIB = (ImageButton) findViewById(R.id.shootingMode);
-        shootModeIB.setOnClickListener(this);
+        shootModeIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!cameraConfigIsShow && !cameraSettingIsShow) {
+                    showCameraSetting();
+                } else
+                    hideCameraSetting();
+            }
+        });
     }
+
 
     @Override
     public void onClick(View v) {
@@ -518,9 +535,9 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             case R.id.camera_mode_imageButton:
                 showToast("Camera mode image button clicked!");
                 if (isPhotoMode) {
-                    setCameraMode(1);
+                    setShootPhotoMode(1);
                 } else {
-                    setCameraMode(0);
+                    setShootPhotoMode(0);
                 }
                 break;
             case R.id.takePhoto:
@@ -538,6 +555,14 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 .beginTransaction()
                 .add(R.id.mission_window, MissionSelectionFragment.newInstance(), MissionSelectionFragment.class.toString())
                 .commit();
+    }
+
+    private void hideCameraSetting() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(CameraSettingFragment.class.getName());
+        if (fragment != null) {
+            getSupportFragmentManager().beginTransaction().hide(fragment).commit();
+            cameraSettingIsShow = false;
+        }
     }
 
     private void hideCameraConfig() {
@@ -586,8 +611,21 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                 .commit();
     }
 
+    private void showCameraSetting() {
+        if (isRecording || isTakingIntervalPhoto) return;
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(CameraSettingFragment.class.getName());
+        if (fragment == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.cameraConfigFragment, CameraSettingFragment.newInstance(), CameraSettingFragment.class.getName())
+                    .commit();
+        } else {
+            getSupportFragmentManager().beginTransaction().show(fragment).commit();
+        }
+        cameraSettingIsShow = true;
+    }
+
     private void showCameraConfig() {
-        if (isRecording) return;
+        if (isRecording || isTakingIntervalPhoto) return;
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(CameraConfigFragment.class.getName());
         if (fragment == null) {
             FragmentManager mManager = getSupportFragmentManager();
@@ -658,7 +696,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         });
     }
 
-    private void setCameraMode(int cameraMode) // 0 for photo, 1 for video, 2 for Playback, 3 for MediaDownload, 4 for Unknown
+    private void setShootPhotoMode(int cameraMode) // 0 for photo, 1 for video, 2 for Playback, 3 for MediaDownload, 4 for Unknown
     {
         mCamera = mProduct.getCamera();
         if (mCamera == null) return;
@@ -779,29 +817,44 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void captureAction() {
-        CameraMode cameraMode = CameraMode.ShootPhoto;
         mCamera = mProduct.getCamera();
-        mCamera.setCameraMode(cameraMode, new DJICompletionCallback() {
-            @Override
-            public void onResult(DJIError djiError) {
-                if (djiError == null) // if set camera mode success
-                {
-                    CameraShootPhotoMode shootPhotoMode = CameraShootPhotoMode.Single;
-                    mCamera.startShootPhoto(shootPhotoMode, new DJICompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError == null)
-                                showToast("Take photo success");
-                            else
-                                showToast(djiError.getDescription());
-                        }
-                    });
-                } else // if set camera mode fail
-                {
-                    showToast(djiError.getDescription());
+        if (!isTakingIntervalPhoto)
+            mCamera.setCameraMode(cameraMode, new DJICompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError == null) // if set camera mode success
+                    {
+                        mCamera.startShootPhoto(shootPhotoMode, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if (djiError == null) {
+                                    if (shootPhotoMode == CameraShootPhotoMode.Interval) {
+                                        isTakingIntervalPhoto = true;
+                                        showToast("Taking interval photos!");
+                                        return;
+                                    }
+                                    showToast("Take photo success");
+                                } else
+                                    showToast(djiError.getDescription());
+                            }
+                        });
+                    } else // if set camera mode fail
+                    {
+                        showToast(djiError.getDescription());
+                    }
                 }
-            }
-        });
+            });
+        else
+            mCamera.stopShootPhoto(new DJICompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    if (djiError == null) {
+                        showToast("Stop taking interval photos!");
+                        isTakingIntervalPhoto = false;
+                    }
+                }
+            });
+
     }
 
     private Timer mTimer;

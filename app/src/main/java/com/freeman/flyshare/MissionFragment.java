@@ -247,6 +247,8 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                 !Utils.checkGpsCoordinate(homeLat, homeLng) &&
                 mFlightController != null) {
             updateHomeLocation();
+        } else {
+            return;
         }
 
         switch (v.getId()) {
@@ -259,7 +261,7 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
                     mMissionManager.prepareMission(mMission, new DJIMission.DJIMissionProgressHandler() {
                         @Override
                         public void onProgress(DJIMission.DJIProgressType djiProgressType, float progress) {
-
+                            Log.d("MissionFragment", "Upload mission, upload progress: " + Float.toString(progress));
                         }
                     }, new DJIBaseComponent.DJICompletionCallback() {
                         @Override
