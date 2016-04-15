@@ -243,13 +243,13 @@ public abstract class MissionFragment extends Fragment implements View.OnClickLi
     @Override
     public void onClick(View v) {
         mMissionManager = DJIMissionManager.getInstance();
-        if (FlyShareApplication.getProductInstance() instanceof DJIAircraft &&
-                !Utils.checkGpsCoordinate(homeLat, homeLng) &&
-                mFlightController != null) {
-            updateHomeLocation();
-        } else {
-            return;
-        }
+//        if (FlyShareApplication.getProductInstance() instanceof DJIAircraft &&
+//                !Utils.checkGpsCoordinate(homeLat, homeLng) &&
+//                mFlightController != null) {
+//            updateHomeLocation();
+//        } else {
+//            return;
+//        }
 
         switch (v.getId()) {
             case R.id.upload_mission_button:

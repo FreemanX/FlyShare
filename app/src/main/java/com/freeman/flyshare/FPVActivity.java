@@ -53,7 +53,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         MissionRequestMapHandler {
     String TAG = "FPVActivity";
     public static FragmentManager fragmentManager;
-    public boolean isPhotoMode = true;
+    public static boolean isPhotoMode = true;
     public static boolean FPVIsSmall = false;
     private boolean cameraConfigIsShow, cameraSettingIsShow, missionSelected, isTakingIntervalPhoto = false;
     private ImageButton changeCamModeIB, shootModeIB, camSettingIB, swapViewIB, takeOffButton, landingButton;

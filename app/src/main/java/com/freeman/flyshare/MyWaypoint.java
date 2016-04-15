@@ -3,6 +3,10 @@ package com.freeman.flyshare;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.LinkedList;
 
 import dji.sdk.MissionManager.DJIWaypoint;
@@ -10,7 +14,7 @@ import dji.sdk.MissionManager.DJIWaypoint;
 /**
  * Created by freeman on 4/7/2016.
  */
-public class MyWaypoint {
+public class MyWaypoint implements Serializable {
     final static float DEFAULT_ALTITUDE = 120f;
     final static short DEFAULT_HEADING = 0;
     final static short DEFAULT_GIMBALPITCH = 0;
@@ -18,7 +22,7 @@ public class MyWaypoint {
 
     private int id;
     private MarkerOptions waypointMarkerOptions;
-    private DJIWaypoint djiWaypoint;
+    private transient DJIWaypoint djiWaypoint;
 
     private LatLng location;
     private float altitude;
@@ -32,7 +36,7 @@ public class MyWaypoint {
         this.id = ID;
         this.location = Location;
         this.altitude = DEFAULT_ALTITUDE;
-        this.waypointMarkerOptions = new MarkerOptions().position(location).title("Point " + Integer.toString(id));
+        this.waypointMarkerOptions = new MarkerOptions().position(location).title("Point " + Integer.toString(id)).snippet("Altitude: " + Float.toString(altitude) + " m");
         this.actionLinkedList = new LinkedList<>();
         this.heading = DEFAULT_HEADING;
         this.gimbalPitch = DEFAULT_GIMBALPITCH;
@@ -58,8 +62,21 @@ public class MyWaypoint {
         this.hasAction = hasAction;
     }
 
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeDouble(this.location.latitude);
+        out.writeDouble(this.location.longitude);
+    }
+
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        location = new LatLng(in.readDouble(), in.readDouble());
+    }
+
     public void setAltitude(float inAltitude) {
         this.altitude = inAltitude;
+        this.waypointMarkerOptions = waypointMarkerOptions.snippet("Altitude: " + Float.toString(altitude) + " m");
     }
 
     public float getAltitude() {

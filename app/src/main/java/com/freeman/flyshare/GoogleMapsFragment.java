@@ -462,7 +462,7 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
                 }
 
                 if (receiveMultipleLocationsCallBack != null) {
-                    if (missionPoints.size() > 0)
+                    if (missionPoints != null && missionPoints.size() > 0)
                         receiveMultipleLocationsCallBack.onLocationReceive(true, missionPoints);
                     else
                         receiveMultipleLocationsCallBack.onLocationReceive(false, null);
@@ -498,11 +498,6 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
                 }
             }
         });
-
-//        if (FPVActivity.FPVIsSmall)
-//            markerControlLinearLayout.setVisibility(View.VISIBLE);
-//        else
-//            markerControlLinearLayout.setVisibility(View.GONE);
     }
 
     @Override
@@ -523,9 +518,31 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
     @Override
     public void dropMultipleMarkersOnMap(LinkedList<MyWaypoint> markLocations) {
-        isMakingChange = true;
+        cleanMarkers();
+        if (singleMarker != null)
+            singleMarker.remove();
+        if (multipleMarkers != null && multipleMarkers.size() > 0) {
+            for (Marker marker : multipleMarkers) {
+                marker.remove();
+            }
+        }
+        multipleMarkers = new LinkedList<>();
+        if (missionPath != null) {
+            missionPath.remove();
+        }
+
         this.missionPoints = markLocations;
-        Utils.setResultToToast(getContext(), "dropMultipleMarkersOnMap");
+        PolylineOptions polylineOptions = new PolylineOptions().width(5).color(Color.BLUE);
+        for (MyWaypoint waypoint : missionPoints) {
+            this.multipleMarkers.add(mMap.addMarker(waypoint.getWaypointMarkerOptions()));
+            if (missionPoints.size() > 1) {
+                polylineOptions.add(waypoint.getLocation());
+            }
+        }
+        if (missionPoints.size() > 1)
+            missionPath = mMap.addPolyline(polylineOptions);
+
+        Utils.setResultToToast(getContext(), "dropMultipleMarkersOnMap, drop " + Integer.toString(markLocations.size()) + " markers");
     }
 
     @Override

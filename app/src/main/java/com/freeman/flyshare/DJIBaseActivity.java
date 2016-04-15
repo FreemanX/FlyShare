@@ -63,33 +63,48 @@ public class DJIBaseActivity extends Activity {
 
 
         final Intent FPVActivity = new Intent(this, com.freeman.flyshare.FPVActivity.class);
-
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
+        registerReceiver(mReceiver, intentFilter);
 
         confirm = (Button) findViewById(R.id.confirmTypeBtn);
         confirm.setVisibility(View.VISIBLE);
         typeTV = (TextView) findViewById(R.id.typeTV);
 
         changeConnectionStatus();
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
-        if (mReceiver.isInitialStickyBroadcast() || mReceiver.isOrderedBroadcast())
-            unregisterReceiver(mReceiver);
-        registerReceiver(mReceiver, intentFilter);
-
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mProduct = FlyShareApplication.getProductInstance();
                 if (true || mProduct != null) { // Debug: add always true condition here
                     startActivity(FPVActivity);
-                    unregisterReceiver(mReceiver);
                     finish();
                 } else
                     Toast.makeText(getApplicationContext(), "You are not connecting to drone!", Toast.LENGTH_SHORT).show();
             }
         });
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
     }
 
 }

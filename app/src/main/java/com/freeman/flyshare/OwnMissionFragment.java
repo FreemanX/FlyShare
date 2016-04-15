@@ -2,16 +2,26 @@ package com.freeman.flyshare;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 
 import dji.sdk.MissionManager.DJIMission;
@@ -19,15 +29,17 @@ import dji.sdk.MissionManager.DJIWaypointMission;
 
 
 public class OwnMissionFragment extends MissionFragment {
-    private LinearLayout enterConfigMissionLinearLayout;
+    private LinearLayout enterConfigMissionLinearLayout, selectMissionLinearLayout;
     private Button loadMissionButton, createMissionButton, editPointButton, saveMissionButton;
     private RadioGroup finishActionRadioGroup, headingRadioGroup;
-    private RadioButton noActionRadioButton, controlByRCRadioButton;
+    private RadioButton goHomeRadioButton, noActionRadioButton, stayInFirstRadioButton, landAtLastRadioButton, autoRadioButton, controlByRCRadioButton, useWaypointRadioButton;
     private TextView maxSpeedTextView, allSameAltitudeTextView, allSameAltitudeTitleTextView, repeatTimeTextView;
     private SeekBar maxSpeedSeekBar, allSameAltitudeSeekBar, repeatTimeSeekBar;
     private CheckBox noRCContinueCheckBox, autoPitchGimbalCheckBox, allSameAltitudeCheckBox;
-
+    private ListView missionListView;
     private MyWaypointMission currentMission;
+    MissionItemAdapter missionItemAdapter;
+    LinkedList<Utils.MissionPack> missionPacks;
 
     public OwnMissionFragment() {
 
@@ -67,6 +79,8 @@ public class OwnMissionFragment extends MissionFragment {
 
         headingRadioGroup = (RadioGroup) mView.findViewById(R.id.heading_radio_group);
         controlByRCRadioButton = (RadioButton) mView.findViewById(R.id.control_by_RC_heading_radioButton);
+        autoRadioButton = (RadioButton) mView.findViewById(R.id.auto_land_radioButton);
+        useWaypointRadioButton = (RadioButton) mView.findViewById(R.id.use_waypoint_heading_radioButton);
         controlByRCRadioButton.setChecked(true);
         headingRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -89,6 +103,9 @@ public class OwnMissionFragment extends MissionFragment {
 
         this.finishActionRadioGroup = (RadioGroup) mView.findViewById(R.id.finish_action_radio_group);
         noActionRadioButton = (RadioButton) mView.findViewById(R.id.no_action_radioButton);
+        goHomeRadioButton = (RadioButton) mView.findViewById(R.id.go_home_radioButton);
+        stayInFirstRadioButton = (RadioButton) mView.findViewById(R.id.go_first_point_radioButton);
+        landAtLastRadioButton = (RadioButton) mView.findViewById(R.id.auto_land_radioButton);
         noActionRadioButton.setChecked(true);
         finishActionRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -194,7 +211,6 @@ public class OwnMissionFragment extends MissionFragment {
         allSameAltitudeTitleTextView.setVisibility(View.GONE);
         allSameAltitudeTextView.setVisibility(View.GONE);
         allSameAltitudeSeekBar.setVisibility(View.GONE);
-
         editPointButton = (Button) mView.findViewById(R.id.edit_marks_button);
         editPointButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -211,14 +227,24 @@ public class OwnMissionFragment extends MissionFragment {
                         fragmentActivity.getSupportFragmentManager().beginTransaction().show(getThis()).commit();
                     }
                 });
-
                 fragmentActivity.getSupportFragmentManager().beginTransaction().hide(getThis()).commit();
 
             }
         });
 
         this.saveMissionButton = (Button) mView.findViewById(R.id.save_mission_button);
-
+        saveMissionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentMission != null) {
+                    if (Utils.saveMission(fragmentActivity, currentMission)) {
+                        Utils.setResultToToast(fragmentActivity, "Mission saved!");
+                    } else {
+                        Utils.setResultToToast(fragmentActivity, "Failed to save mission!");
+                    }
+                }
+            }
+        });
         this.repeatTimeTextView = (TextView) mView.findViewById(R.id.repeat_time_textView);
         this.repeatTimeSeekBar = (SeekBar) mView.findViewById(R.id.repeat_time_seekBar);
 
@@ -244,23 +270,161 @@ public class OwnMissionFragment extends MissionFragment {
         });
     }
 
+    class MissionSingleRow {
+        String title;
+        String description;
+
+        public MissionSingleRow(String title, String description) {
+            this.title = title;
+            this.description = description;
+        }
+    }
+
+    class MissionItemAdapter extends BaseAdapter {
+        ArrayList<MissionSingleRow> itemList;
+        Context mContext;
+
+        public MissionItemAdapter(Context context) {
+            itemList = new ArrayList<>();
+            mContext = context;
+        }
+
+        public void addItem(MissionSingleRow row) {
+            itemList.add(row);
+        }
+
+        public void clearAllItem() {
+            itemList = new ArrayList<>();
+        }
+
+        @Override
+        public int getCount() {
+            return itemList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return itemList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View row = inflater.inflate(R.layout.action_name_des_spinner_item, parent, false);
+            TextView titleTextView = (TextView) row.findViewById(R.id.item_title_textView);
+            TextView descTextView = (TextView) row.findViewById(R.id.item_desc_textView);
+            titleTextView.setText(itemList.get(position).title);
+            descTextView.setText(itemList.get(position).description);
+            return row;
+        }
+    }
+
+    private void updateMissionItems() {
+        missionItemAdapter.clearAllItem();
+        missionPacks = Utils.getAllMissions(fragmentActivity);
+        if (missionPacks != null && missionPacks.size() > 0) {
+            for (Utils.MissionPack missionPack : missionPacks) {
+                missionItemAdapter.addItem(new MissionSingleRow(missionPack.name, missionPack.desc));
+            }
+        }
+        missionItemAdapter.notifyDataSetChanged();
+    }
+
     private void initEnterConfigMissionUI() {
         uploadButton.setVisibility(View.GONE);
+        selectMissionLinearLayout = (LinearLayout) mView.findViewById(R.id.mission_selection_layout);
+        selectMissionLinearLayout.setVisibility(View.GONE);
+        missionListView = (ListView) mView.findViewById(R.id.mission_listView);
+        missionItemAdapter = new MissionItemAdapter(fragmentActivity);
+        missionListView.setAdapter(missionItemAdapter);
+        missionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                currentMission = Utils.getMission(fragmentActivity, missionPacks.get(position).fileName);
+                if (currentMission != null) {
+                    missionRequestMapHandler.sendDropMultipleMarkersRequestToMap(currentMission.getMissionPoints());
+                    fragmentActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            selectMissionLinearLayout.setVisibility(View.GONE);
+                            enterConfigMissionLinearLayout.setVisibility(View.GONE);
+                            configLayout.setVisibility(View.VISIBLE);
+                            uploadButton.setVisibility(View.VISIBLE);
+                            if (currentMission.getFinishedAction() == DJIWaypointMission.DJIWaypointMissionFinishedAction.GoHome) {
+                                goHomeRadioButton.setChecked(true);
+                            } else if (currentMission.getFinishedAction() == DJIWaypointMission.DJIWaypointMissionFinishedAction.NoAction)
+                                noActionRadioButton.setChecked(true);
+                            else if (currentMission.getFinishedAction() == DJIWaypointMission.DJIWaypointMissionFinishedAction.GoFirstWaypoint) {
+                                stayInFirstRadioButton.setChecked(true);
+                            } else if (currentMission.getFinishedAction() == DJIWaypointMission.DJIWaypointMissionFinishedAction.AutoLand) {
+                                landAtLastRadioButton.setChecked(true);
+                            }
+
+                            if (currentMission.getHeadingMode() == DJIWaypointMission.DJIWaypointMissionHeadingMode.Auto) {
+                                autoRadioButton.setChecked(true);
+                            } else if (currentMission.getHeadingMode() == DJIWaypointMission.DJIWaypointMissionHeadingMode.ControlByRemoteController)
+                                controlByRCRadioButton.setChecked(true);
+                            else if (currentMission.getHeadingMode() == DJIWaypointMission.DJIWaypointMissionHeadingMode.UsingWaypointHeading)
+                                useWaypointRadioButton.setChecked(true);
+
+                            int flySpeed = (int) currentMission.getAutoFlightSpeed();
+                            maxSpeedSeekBar.setProgress(flySpeed - 2);
+                            maxSpeedTextView.setText(Integer.toString(flySpeed) + " m/s");
+
+                            noRCContinueCheckBox.setChecked(!currentMission.isNeedExitMissionOnRCSignalLost());
+                            autoPitchGimbalCheckBox.setChecked(currentMission.isNeedRotateGimbalPitch());
+                            allSameAltitudeCheckBox.setChecked(currentMission.isAllSameAltitude());
+                            int alt = (int) currentMission.getSameAltitude();
+                            allSameAltitudeSeekBar.setProgress(alt - 5);
+                            allSameAltitudeTextView.setText(Integer.toString(alt) + " m");
+                            repeatTimeSeekBar.setProgress(currentMission.getRepeatNum() - 1);
+                            repeatTimeTextView.setText(Integer.toString(currentMission.getRepeatNum()));
+                        }
+                    });
+                } else {
+                    Log.e("OwnMission", "+++++++++=================>>> Get mission failed!");
+                    fragmentActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            selectMissionLinearLayout.setVisibility(View.GONE);
+                            enterConfigMissionLinearLayout.setVisibility(View.VISIBLE);
+                            configLayout.setVisibility(View.GONE);
+                            uploadButton.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            }
+        });
+
         this.enterConfigMissionLinearLayout = (LinearLayout) mView.findViewById(R.id.enter_config_mission_layout);
         this.createMissionButton = (Button) mView.findViewById(R.id.create_mission_button);
         this.loadMissionButton = (Button) mView.findViewById(R.id.load_mission_button);
         loadMissionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                updateMissionItems();
+                selectMissionLinearLayout.setVisibility(View.VISIBLE);
+                enterConfigMissionLinearLayout.setVisibility(View.GONE);
+                configLayout.setVisibility(View.GONE);
+                ongoingLayout.setVisibility(View.GONE);
+                cancelButton.setVisibility(View.VISIBLE);
             }
         });
+
+
         createMissionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                selectMissionLinearLayout.setVisibility(View.GONE);
                 enterConfigMissionLinearLayout.setVisibility(View.GONE);
                 configLayout.setVisibility(View.VISIBLE);
                 uploadButton.setVisibility(View.VISIBLE);
+                cancelButton.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -284,7 +448,10 @@ public class OwnMissionFragment extends MissionFragment {
 
     @Override
     protected void initMissionVariables() {
-        currentMission = new MyWaypointMission("", "");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Calendar cal = Calendar.getInstance();
+        currentMission = new MyWaypointMission("Mission" + Long.toString(System.currentTimeMillis()),
+                "Mission created at " + dateFormat.format(cal.getTime()));
     }
 
 

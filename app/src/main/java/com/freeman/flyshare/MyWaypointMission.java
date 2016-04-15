@@ -1,5 +1,7 @@
 package com.freeman.flyshare;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
@@ -24,15 +26,59 @@ public class MyWaypointMission implements Serializable {
     private boolean needExitMissionOnRCSignalLost = false; //warn the user about this function
     private boolean needRotateGimbalPitch = false;
     private int repeatNum = 1; //[0, 255]
-    private DJIWaypointMission mWaypointMission;
+    private transient DJIWaypointMission mWaypointMission;
 
     private boolean isAllSameAltitude = false;
     private float sameAltitude = 120f;
+
 
     public MyWaypointMission(String MissionName, String MissionDescription) {
         this.missionPointLinkedList = new LinkedList<>();
         this.missionName = MissionName;
         this.missionDescription = MissionDescription;
+    }
+
+    public SavedWaypointMission prepareSavedMission() {
+        SavedWaypointMission savedWaypointMission
+                = new SavedWaypointMission(this.missionName, this.missionDescription,
+                this.autoFlightSpeed, this.finishedAction, this.flightPathMode, this.gotoWaypointMode, this.headingMode,
+                this.maxFlightSpeed, this.needExitMissionOnRCSignalLost, this.needRotateGimbalPitch, this.repeatNum, this.isAllSameAltitude,
+                this.sameAltitude);
+        for (MyWaypoint myWaypoint : missionPointLinkedList) {
+            savedWaypointMission.missionPointAltLinkedList.add(myWaypoint.getAltitude());
+            savedWaypointMission.missionPointLatLinkedList.add(myWaypoint.getLocation().latitude);
+            savedWaypointMission.missionPointLngLinkedList.add(myWaypoint.getLocation().longitude);
+            savedWaypointMission.gimbalPitchLinkedList.add(myWaypoint.getGimbalPitch());
+            savedWaypointMission.headingLinkedList.add(myWaypoint.getHeading());
+        }
+        return savedWaypointMission;
+    }
+
+    public static MyWaypointMission restoreWayPointMission(SavedWaypointMission savedWaypointMission) {
+        MyWaypointMission restoredMission = new MyWaypointMission(savedWaypointMission.missionName, savedWaypointMission.missionDescription);
+        restoredMission.setAutoFlightSpeed(savedWaypointMission.autoFlightSpeed);
+        restoredMission.setFinishedAction(savedWaypointMission.finishedAction);
+        restoredMission.setFlightPathMode(savedWaypointMission.flightPathMode);
+        restoredMission.setGotoWaypointMode(savedWaypointMission.gotoWaypointMode);
+        restoredMission.setHeadingMode(savedWaypointMission.headingMode);
+        restoredMission.setMaxFlightSpeed(savedWaypointMission.maxFlightSpeed);
+        restoredMission.setNeedExitMissionOnRCSignalLost(savedWaypointMission.needExitMissionOnRCSignalLost);
+        restoredMission.setNeedRotateGimbalPitch(savedWaypointMission.needRotateGimbalPitch);
+        restoredMission.setRepeatNum(savedWaypointMission.repeatNum);
+        restoredMission.setIsAllSameAltitude(savedWaypointMission.isAllSameAltitude);
+        restoredMission.setSameAltitude(savedWaypointMission.sameAltitude);
+        int i;
+        for (i = 0; i < savedWaypointMission.headingLinkedList.size(); i++) {
+            LatLng position = new LatLng(savedWaypointMission.missionPointLatLinkedList.get(i), savedWaypointMission.missionPointLngLinkedList.get(i));
+            MyWaypoint waypoint = new MyWaypoint(i, position);
+            waypoint.setGimbalPitch(savedWaypointMission.gimbalPitchLinkedList.get(i));
+            waypoint.setHeading(savedWaypointMission.headingLinkedList.get(i));
+            waypoint.setAltitude(savedWaypointMission.missionPointAltLinkedList.get(i));
+            restoredMission.addWaypoint(waypoint);
+            Log.e("MyWaypointMission", "Waypoint(" + Double.toString(position.latitude) + Double.toString(position.longitude) + Float.toString(savedWaypointMission.missionPointAltLinkedList.get(i)) + "):");
+        }
+        Log.e("MyWaypointMission", "Mission " + savedWaypointMission.missionName + " loaded: " + Integer.toString(i) + " waypoints, ");
+        return restoredMission;
     }
 
     public DJIWaypointMission initDJIWaypointMission() {
@@ -57,6 +103,7 @@ public class MyWaypointMission implements Serializable {
     }
 
     public LinkedList<MyWaypoint> getMissionPoints() {
+        Log.e("MyWaypointMission", "Mission " + missionName + " loaded: " + Integer.toString(missionPointLinkedList.size()) + " waypoints");
         return this.missionPointLinkedList;
     }
 
@@ -68,10 +115,9 @@ public class MyWaypointMission implements Serializable {
         return this.missionPointLinkedList.getFirst().getAltitude();
     }
 
-    public boolean addWaypoint(LatLng location) {
+    public boolean addWaypoint(MyWaypoint waypoint) {
         if (this.missionPointLinkedList.size() > 98)
             return false;
-        MyWaypoint waypoint = new MyWaypoint(missionPointLinkedList.size(), location);
         this.missionPointLinkedList.add(waypoint);
         return true;
     }

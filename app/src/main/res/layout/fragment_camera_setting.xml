@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
-        android:background="#4f000001"
+        android:background="#b7000001"
         android:orientation="vertical">
 
         <ScrollView
@@ -43,9 +43,9 @@
                         android:id="@+id/photo_format_spinner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="0dp"
                         android:layout_marginLeft="20dp"
-                        android:layout_marginRight="10dp"
-                        android:layout_marginBottom="0dp" />
+                        android:layout_marginRight="10dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -234,7 +234,8 @@
                         android:text="Video Resolution"
                         android:textColor="#dcffffff"
                         android:textSize="20dp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:visibility="gone" />
 
 
                     <Spinner
@@ -251,7 +252,8 @@
                         android:text="Video Standard"
                         android:textColor="#dcffffff"
                         android:textSize="20dp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
