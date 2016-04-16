@@ -1,6 +1,5 @@
 package com.freeman.flyshare;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,9 +14,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.freeman.flyshare.yweathergetter4a.LocalMissionFragment;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
+    WeatherFragment weatherFragment;
+    LocalMissionFragment localMissionFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +48,14 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+
+        weatherFragment = WeatherFragment.newInstance();
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.weather_linearLayout, WeatherFragment.newInstance(), WeatherFragment.class.getName())
+                .add(R.id.weather_linearLayout, weatherFragment, WeatherFragment.class.getName())
+                .commit();
+        localMissionFragment = LocalMissionFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.mission_linearLayout, localMissionFragment, LocalMissionFragment.class.getName())
                 .commit();
 
     }
@@ -99,6 +107,11 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
 }

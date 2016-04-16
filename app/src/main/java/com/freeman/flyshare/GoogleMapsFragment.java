@@ -871,7 +871,8 @@ public class GoogleMapsFragment extends Fragment implements GoogleMap.OnMarkerCl
 
     @Override
     public void onStop() {
-        mTask.cancel();
+        if (mTask != null)
+            mTask.cancel();
         Log.e("GoogleMapsFragment", "onResume()");
         Log.e("GoogleMapsFragment", "================>> markerControlLinearLayout is visible: " + Boolean.toString(markerControlLinearLayout.getVisibility() == View.VISIBLE));
         super.onStop();

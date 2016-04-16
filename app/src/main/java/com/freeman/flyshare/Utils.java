@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -132,9 +133,19 @@ public class Utils {
         }
     }
 
+
+    public static boolean deleteMission(Activity activity, int missionID, String fileName) {
+        activity.deleteFile(fileName);
+        SQLHelper helper = new SQLHelper(activity);
+        SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
+        int numRow = sqLiteDatabase.delete(MISSION_TABLE, MISSION_ID + "=" + Integer.toString(missionID), null);
+        sqLiteDatabase.close();
+        return numRow > 0;
+    }
+
     public static boolean saveMission(Activity activity, MyWaypointMission mission) {
         if (mission == null) return false;
-        String fileName = mission.missionName + ".ser";
+        String fileName = mission.missionName + Double.toString(Math.random()) + ".ser";
         boolean saveSuccess = false;
         try {
             FileOutputStream fileOutputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);

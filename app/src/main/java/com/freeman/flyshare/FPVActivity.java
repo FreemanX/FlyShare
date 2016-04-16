@@ -14,6 +14,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -871,6 +872,8 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     public void onResume() {
         Log.e(TAG, "onResume");
         UpdateFlightControllerTask updateFlightControllerTask = new UpdateFlightControllerTask();
+        if (GoogleMapsFragment.isMakingChange || GoogleMapsFragment.isAddSingle || GoogleMapsFragment.isAddMultiple)
+            setFPVFragmentLarge(!FPVIsSmall);
         mTimer = new Timer();
 //        mTimer.schedule(updateFlightControllerTask, 0, 500);
         super.onResume();
@@ -932,4 +935,41 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     public void setIsRecording(boolean isRecording) {
         this.isRecording = isRecording;
     }
+
+    private static boolean first = false;
+    private Timer ExitTimer = new Timer();
+
+    class ExitCleanTask extends TimerTask {
+
+        @Override
+
+        public void run() {
+
+            Log.e("ExitCleanTask", "Run in!!!! ");
+            first = false;
+        }
+    }
+
+    @Override
+
+// Tab return button twice to exit the app
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) { // TODO Auto-generated method stub
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Log.d(TAG, "onKeyDown KEYCODE_BACK");
+            if (first) {
+                first = false;
+                finish();
+                System.exit(0);
+            } else {
+                first = true;
+                Toast.makeText(FPVActivity.this, getText(R.string.press_again_exit), Toast.LENGTH_SHORT).show();
+                ExitTimer.schedule(new ExitCleanTask(), 2000);
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
 }

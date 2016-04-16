@@ -218,6 +218,8 @@ public class OwnMissionFragment extends MissionFragment {
         editPointButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (currentMission == null)
+                    currentMission = new MyWaypointMission("", "");
                 LinkedList<MyWaypoint> locations = currentMission.getMissionPoints();
                 if (locations != null && locations.size() > 0)
                     missionRequestMapHandler.sendDropMultipleMarkersRequestToMap(locations);
@@ -249,10 +251,12 @@ public class OwnMissionFragment extends MissionFragment {
                                 public void onClick(DialogInterface dialog, int which) {
                                     String name = ((EditText) missionDescView.findViewById(R.id.mission_name_editText)).getText().toString();
                                     String desc = ((EditText) missionDescView.findViewById(R.id.mission_description_editText)).getText().toString();
+                                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                                    Calendar cal = Calendar.getInstance();
                                     if (name != null && name.length() > 0)
-                                        currentMission.missionName = name;
+                                        currentMission.missionName = "Mission" + Long.toString(System.currentTimeMillis());
                                     if (desc != null && desc.length() > 0)
-                                        currentMission.missionDescription = desc;
+                                        currentMission.missionDescription = "Mission created at " + dateFormat.format(cal.getTime());
                                     if (Utils.saveMission(fragmentActivity, currentMission)) {
                                         Utils.setResultToToast(fragmentActivity, "Mission saved!");
                                     } else {

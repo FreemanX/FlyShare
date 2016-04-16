@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,9 +26,8 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
     ImageView weatherImageView;
     TextView dateTextView, weatherTextView, temperatureTextView, windDirectionTextView, windSpeedTextView, visibilityTextView;
     private YahooWeather mYahooWeather = YahooWeather.getInstance(5000, 5000, true);
-    private ProgressDialog mProgressDialog;
     Activity fragmentActivity;
-
+    Button refreshButton;
     public WeatherFragment() {
         // Required empty public constructor
     }
@@ -44,11 +44,11 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
         super.onCreate(savedInstanceState);
     }
 
-    private void searchByGPS() {
+    public void searchByGPS() {
         mYahooWeather.setNeedDownloadIcons(true);
         mYahooWeather.setUnit(YahooWeather.UNIT.CELSIUS);
         mYahooWeather.setSearchMode(YahooWeather.SEARCH_MODE.GPS);
-        mYahooWeather.queryYahooWeatherByGPS(getContext(), this);
+        mYahooWeather.queryYahooWeatherByGPS(fragmentActivity, this);
     }
 
     @Override
@@ -56,13 +56,8 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
                              Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_wether, container, false);
         mYahooWeather.setExceptionListener(this);
-        searchByGPS();
-
-        mProgressDialog = new ProgressDialog(getContext());
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-
         fragmentActivity = getActivity();
-
+        searchByGPS();
         weatherImageView = (ImageView) mView.findViewById(R.id.weather_imageView);
         dateTextView = (TextView) mView.findViewById(R.id.date_textView);
         weatherTextView = (TextView) mView.findViewById(R.id.weather_textView);
@@ -70,6 +65,13 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
         windDirectionTextView = (TextView) mView.findViewById(R.id.wind_direction_textView);
         windSpeedTextView = (TextView) mView.findViewById(R.id.wind_speed_textView);
         visibilityTextView = (TextView) mView.findViewById(R.id.visibility_textView);
+        refreshButton = (Button) mView.findViewById(R.id.refresh_button);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                searchByGPS();
+            }
+        });
         return mView;
     }
 
@@ -88,16 +90,17 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
 
     }
 
+    public void onStop() {
+        super.onStop();
+    }
+
     @Override
     public void onDestroy() {
-        hideProgressDialog();
-        mProgressDialog = null;
         super.onDestroy();
     }
 
     @Override
     public void onResume() {
-        showProgressDialog();
         super.onResume();
     }
 
@@ -124,20 +127,20 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
 
     @Override
     public void gotWeatherInfo(final WeatherInfo weatherInfo) {
-        hideProgressDialog();
         if (weatherInfo != null) {
             fragmentActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     dateTextView.setText(weatherInfo.getCurrentConditionDate());
                     weatherTextView.setText(weatherInfo.getCurrentText());
-                    int celTmp = (weatherInfo.getCurrentTemp() - 32) * (5 / 9);
-                    temperatureTextView.setText(Integer.toString(celTmp) + "°C");
+                    float celTmp = (float) (((float) weatherInfo.getCurrentTemp() - 32f) * (5.0 / 9.0));
+                    Log.e("Temprature", " ========================>>> Current:" + Integer.toString(weatherInfo.getCurrentTemp()));
+                    temperatureTextView.setText(Float.toString(celTmp) + " °C");
                     windSpeedTextView.setText(weatherInfo.getWindSpeed() + " KPM");
                     windDirectionTextView.setText(weatherInfo.getWindDirection() + " degrees");
                     visibilityTextView.setText(weatherInfo.getAtmosphereVisibility());
                     if (weatherInfo.getCurrentConditionIcon() != null) {
-                        weatherImageView.setImageBitmap(scaleBitmap(weatherInfo.getCurrentConditionIcon(), 200, 200));
+                        weatherImageView.setImageBitmap(scaleBitmap(weatherInfo.getCurrentConditionIcon(), 160, 160));
                     }
                 }
             });
@@ -155,18 +158,4 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
         return Bitmap.createBitmap(bitmapToScale, 0, 0, bitmapToScale.getWidth(), bitmapToScale.getHeight(), matrix, true);
     }
 
-    private void showProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.cancel();
-        }
-        mProgressDialog = new ProgressDialog(getContext());
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.show();
-    }
-
-    private void hideProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.cancel();
-        }
-    }
 }
