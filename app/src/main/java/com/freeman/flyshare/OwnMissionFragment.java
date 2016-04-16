@@ -1,7 +1,9 @@
 package com.freeman.flyshare;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -237,11 +240,32 @@ public class OwnMissionFragment extends MissionFragment {
             @Override
             public void onClick(View v) {
                 if (currentMission != null) {
-                    if (Utils.saveMission(fragmentActivity, currentMission)) {
-                        Utils.setResultToToast(fragmentActivity, "Mission saved!");
-                    } else {
-                        Utils.setResultToToast(fragmentActivity, "Failed to save mission!");
-                    }
+                    final LinearLayout missionDescView = (LinearLayout) getLayoutInflater(savedInstanceState).inflate(R.layout.mission_desc_layout, null);
+                    new AlertDialog.Builder(fragmentActivity)
+                            .setTitle("Config mission")
+                            .setView(missionDescView)
+                            .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String name = ((EditText) missionDescView.findViewById(R.id.mission_name_editText)).getText().toString();
+                                    String desc = ((EditText) missionDescView.findViewById(R.id.mission_description_editText)).getText().toString();
+                                    if (name != null && name.length() > 0)
+                                        currentMission.missionName = name;
+                                    if (desc != null && desc.length() > 0)
+                                        currentMission.missionDescription = desc;
+                                    if (Utils.saveMission(fragmentActivity, currentMission)) {
+                                        Utils.setResultToToast(fragmentActivity, "Mission saved!");
+                                    } else {
+                                        Utils.setResultToToast(fragmentActivity, "Failed to save mission!");
+                                    }
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            }).create().show();
                 }
             }
         });
