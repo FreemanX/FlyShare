@@ -90,7 +90,6 @@ public class LocalMissionFragment extends Fragment {
         localMissionListView = (ListView) mView.findViewById(R.id.local_mission_listView);
         localMissionItemAdapter = new MissionItemAdapter(fragmentActivity);
         localMissionListView.setAdapter(localMissionItemAdapter);
-        updateMissionItems();
         swipeContainer = (SwipeRefreshLayout) mView.findViewById(R.id.swipeContainer);
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -131,6 +130,12 @@ public class LocalMissionFragment extends Fragment {
         updateThread = new UpdateThread();
         updateThread.start();
         return mView;
+    }
+
+    public void onResume()
+    {
+        updateMissionItems();
+        super.onResume();
     }
 
     class loadingThread extends Thread {
