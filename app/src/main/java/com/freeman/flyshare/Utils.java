@@ -32,20 +32,12 @@ public class Utils {
     private static Handler mUIHandler = new Handler(Looper.getMainLooper());
     public static final String DATABASE_NAME = "FlyShareDB";
     public static final String MISSION_TABLE = "MissionTable";
+    public static final String ONLINE_MISSION_TABLE = "OnlineMissionTable";
     public static final String MISSION_ID = "mId";
     public static final String MISSION_NAME = "mName";
     public static final String MISSION_DESC = "mDesc";
     public static final String MISSION_FILE_NAME = "mFileName";
 
-    public static boolean isFastDoubleClick() {
-        long time = System.currentTimeMillis();
-        long timeD = time - lastClickTime;
-        if (0 < timeD && timeD < 800) {
-            return true;
-        }
-        lastClickTime = time;
-        return false;
-    }
 
     public static void setResultToToast(final Context context, final String string) {
         if (context == null || string == null) return;
@@ -59,10 +51,6 @@ public class Utils {
 
     public static boolean checkGpsCoordinate(double latitude, double longitude) {
         return (latitude > -90 && latitude < 90 && longitude > -180 && longitude < 180) && (latitude != 0f && longitude != 0f);
-    }
-
-    public static double Radian(double x) {
-        return x * Math.PI / 180.0;
     }
 
     public static double Degree(double x) {
@@ -105,6 +93,20 @@ public class Utils {
         return missionPacks;
     }
 
+    public static LinkedList<MissionPack> getAllOnlineMissions(Activity activity) {
+        SQLHelper helper = new SQLHelper(activity);
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        String[] columns = {MISSION_ID, MISSION_NAME, MISSION_DESC, MISSION_FILE_NAME};
+        Cursor cursor = db.query(ONLINE_MISSION_TABLE, columns, null, null, null, null, null);
+        LinkedList<MissionPack> missionPacks = new LinkedList<>();
+        while (cursor.moveToNext()) {
+            missionPacks.add(new MissionPack(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+        }
+        db.close();
+        return missionPacks;
+    }
+
     public static MyWaypointMission getMission(Activity activity, String fname) {
         try {
             FileInputStream fileIn = activity.openFileInput(fname);
@@ -133,14 +135,56 @@ public class Utils {
         }
     }
 
-
     public static boolean deleteMission(Activity activity, int missionID, String fileName) {
-        activity.deleteFile(fileName);
+//        activity.deleteFile(fileName);
         SQLHelper helper = new SQLHelper(activity);
         SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
         int numRow = sqLiteDatabase.delete(MISSION_TABLE, MISSION_ID + "=" + Integer.toString(missionID), null);
         sqLiteDatabase.close();
         return numRow > 0;
+    }
+
+    public static boolean uploadMission(Activity activity, MyWaypointMission mission, String fileName)
+    {
+        SQLHelper helper = new SQLHelper(activity);
+        SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(ONLINE_MISSION_TABLE, mission.missionName);
+        contentValues.put(ONLINE_MISSION_TABLE, mission.missionDescription);
+        contentValues.put(ONLINE_MISSION_TABLE, fileName);
+        long id = sqLiteDatabase.insert(ONLINE_MISSION_TABLE, null, contentValues);
+        sqLiteDatabase.close();
+        return id > 0;
+    }
+
+    public static boolean downloadMission(Activity activity, MyWaypointMission mission) {
+        if (mission == null) return false;
+        String fileName = "i" + mission.missionName + Double.toString(Math.random());
+        boolean saveSuccess = false;
+        try {
+            FileOutputStream fileOutputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(mission.prepareSavedMission());
+            objectOutputStream.close();
+            fileOutputStream.close();
+            saveSuccess = true;
+        } catch (FileNotFoundException e) {
+            Log.e("Utils", "Fail to save mission!1 " + e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e("Utils", "Fail to save mission!2 " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        SQLHelper helper = new SQLHelper(activity);
+        SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MISSION_NAME, mission.missionName);
+        contentValues.put(MISSION_DESC, mission.missionDescription);
+        contentValues.put(MISSION_FILE_NAME, fileName);
+        long id = sqLiteDatabase.insert(MISSION_TABLE, null, contentValues);
+        sqLiteDatabase.close();
+        return saveSuccess && id > 0;
     }
 
     public static boolean saveMission(Activity activity, MyWaypointMission mission) {
@@ -176,7 +220,7 @@ public class Utils {
     static class SQLHelper extends SQLiteOpenHelper {
         Context mContext;
         SQLiteDatabase db;
-        public static final int DATABASE_VERSION = 1;
+        public static final int DATABASE_VERSION = 2;
 
         public SQLHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -194,8 +238,18 @@ public class Utils {
                     + MISSION_DESC + " VARCHAR(128), "
                     + MISSION_FILE_NAME + " VARCHAR(128)"
                     + ");";
+
+            String onCreateOnlineDBQuery = "CREATE TABLE IF NOT EXISTS " + ONLINE_MISSION_TABLE
+                    + " ("
+                    + MISSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + MISSION_NAME + " VARCHAR(64), "
+                    + MISSION_DESC + " VARCHAR(128), "
+                    + MISSION_FILE_NAME + " VARCHAR(128)"
+                    + ");";
+
             try {
                 db.execSQL(onCreateQuery);
+                db.execSQL(onCreateOnlineDBQuery);
             } catch (RuntimeException e) {
                 Log.e("Utils", "Fail crate database: " + e.getMessage()
                         + "\n SQL: " + onCreateQuery);
@@ -206,14 +260,17 @@ public class Utils {
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             Utils.setResultToToast(mContext, "SQLHelper onUpgrade called");
             String dropTableQuery = "DROP TABLE IF EXISTS " + MISSION_TABLE;
+            String dropOnlineTableQuery = "DROP TABLE IF EXISTS " + MISSION_TABLE;
             try {
                 db.execSQL(dropTableQuery);
+                db.execSQL(dropOnlineTableQuery);
                 onCreate(db);
             } catch (RuntimeException e) {
                 Log.e("Utils", "Fail DROP TABLE: " + e.getMessage());
             }
         }
     }
+
 
 
 }

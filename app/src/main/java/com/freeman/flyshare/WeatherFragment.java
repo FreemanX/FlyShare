@@ -28,6 +28,7 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
     private YahooWeather mYahooWeather = YahooWeather.getInstance(5000, 5000, true);
     Activity fragmentActivity;
     Button refreshButton;
+    private ProgressDialog mProgressDialog;
     public WeatherFragment() {
         // Required empty public constructor
     }
@@ -69,9 +70,12 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showProgressDialog();
                 searchByGPS();
             }
         });
+        mProgressDialog = new ProgressDialog(fragmentActivity);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         return mView;
     }
 
@@ -96,6 +100,8 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
 
     @Override
     public void onDestroy() {
+        hideProgressDialog();
+        mProgressDialog = null;
         super.onDestroy();
     }
 
@@ -127,6 +133,12 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
 
     @Override
     public void gotWeatherInfo(final WeatherInfo weatherInfo) {
+        fragmentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                hideProgressDialog();
+            }
+        });
         if (weatherInfo != null) {
             fragmentActivity.runOnUiThread(new Runnable() {
                 @Override
@@ -156,6 +168,21 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
         Matrix matrix = new Matrix();
         matrix.postScale(newWidth / width, newHeight / height);
         return Bitmap.createBitmap(bitmapToScale, 0, 0, bitmapToScale.getWidth(), bitmapToScale.getHeight(), matrix, true);
+    }
+
+    private void showProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.cancel();
+        }
+        mProgressDialog = new ProgressDialog(fragmentActivity);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.cancel();
+        }
     }
 
 }

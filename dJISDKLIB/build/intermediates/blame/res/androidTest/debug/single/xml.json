@@ -1,6 +1,10 @@
 [
     {
-        "merged": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\res\\merged\\androidTest\\debug\\xml\\accessory_filter.xml",
-        "source": "E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\bundles\\debug\\res\\xml\\accessory_filter.xml"
+        "merged": "/Users/xupengfei/Documents/gitDir/FlyShareSDK3.0/E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\res\\merged\\androidTest\\debug\\xml\\accessory_filter.xml",
+        "source": "/Users/xupengfei/Documents/gitDir/FlyShareSDK3.0/E:\\gitDir\\FlyShareSDK3.0\\dJISDKLIB\\build\\intermediates\\bundles\\debug\\res\\xml\\accessory_filter.xml"
+    },
+    {
+        "merged": "/Users/xupengfei/Documents/gitDir/FlyShareSDK3.0/dJISDKLIB/build/intermediates/res/merged/androidTest/debug/xml/accessory_filter.xml",
+        "source": "/Users/xupengfei/Documents/gitDir/FlyShareSDK3.0/dJISDKLIB/build/intermediates/bundles/debug/res/xml/accessory_filter.xml"
     }
 ]
