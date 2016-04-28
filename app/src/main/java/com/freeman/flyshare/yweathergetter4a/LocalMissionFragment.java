@@ -123,7 +123,6 @@ public class LocalMissionFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showProgressDialog();
-                titleTextView.setText("Online missions");
                 new loadingThread().start();
             }
         });
@@ -140,7 +139,7 @@ public class LocalMissionFragment extends Fragment {
 
     class loadingThread extends Thread {
         public void run() {
-            long sleepTime = 1500 + (long) Math.random() * 5000;
+            long sleepTime = 5000 + (long) Math.random() * 5000;
             try {
                 sleep(sleepTime);
             } catch (InterruptedException e) {
@@ -150,17 +149,20 @@ public class LocalMissionFragment extends Fragment {
                 @Override
                 public void run() {
                     hideProgressDialog();
-                    turnToOnlineMode();
+                    Utils.setResultToToast(fragmentActivity, "Time out downloading missions!");
+//                    turnToOnlineMode();
                 }
             });
         }
     }
 
     private void turnToOnlineMode() {
+        titleTextView.setText("Online missions");
         localMissionListView.setVisibility(View.GONE);
         downloadMissionButton.setVisibility(View.GONE);
         onlineMissionListView.setVisibility(View.VISIBLE);
         doneOnlineMissionButton.setVisibility(View.VISIBLE);
+        updateMissionItems();
     }
 
     private void turnToLocalMode() {
@@ -169,6 +171,7 @@ public class LocalMissionFragment extends Fragment {
         downloadMissionButton.setVisibility(View.VISIBLE);
         onlineMissionListView.setVisibility(View.GONE);
         doneOnlineMissionButton.setVisibility(View.GONE);
+        updateMissionItems();
     }
 
     public void updateMissionItems() {
@@ -316,7 +319,7 @@ public class LocalMissionFragment extends Fragment {
             uploadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Utils.downloadMission(fragmentActivity, Utils.getMission(fragmentActivity,onlineMissionPacks.get(position).fileName));
+                    Utils.downloadMission(fragmentActivity, Utils.getMission(fragmentActivity, onlineMissionPacks.get(position).fileName));
                     Log.e("Download Click", "Mission " + Integer.toString(position) + " Download!");
                 }
             });

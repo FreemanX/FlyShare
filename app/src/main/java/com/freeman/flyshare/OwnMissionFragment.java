@@ -251,12 +251,20 @@ public class OwnMissionFragment extends MissionFragment {
                                 public void onClick(DialogInterface dialog, int which) {
                                     String name = ((EditText) missionDescView.findViewById(R.id.mission_name_editText)).getText().toString();
                                     String desc = ((EditText) missionDescView.findViewById(R.id.mission_description_editText)).getText().toString();
+//                                    Utils.setResultToToast(fragmentActivity, "1Name: " + name + "\n1Desc: " + desc);
                                     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                                     Calendar cal = Calendar.getInstance();
-                                    if (name != null && name.length() > 0)
+                                    if (name == null || name.length() < 1)
                                         currentMission.missionName = "Mission" + Long.toString(System.currentTimeMillis());
-                                    if (desc != null && desc.length() > 0)
+                                    else
+                                        currentMission.missionName = name;
+                                    if (desc == null || desc.length() < 1)
                                         currentMission.missionDescription = "Mission created at " + dateFormat.format(cal.getTime());
+                                    else
+                                        currentMission.missionDescription = desc;
+
+//                                    Utils.setResultToToast(fragmentActivity, "2Name: " + name + "\n2Desc: " + desc);
+
                                     if (Utils.saveMission(fragmentActivity, currentMission)) {
                                         Utils.setResultToToast(fragmentActivity, "Mission saved!");
                                     } else {

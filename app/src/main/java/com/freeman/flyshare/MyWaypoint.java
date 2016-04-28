@@ -36,7 +36,7 @@ public class MyWaypoint implements Serializable {
         this.id = ID;
         this.location = Location;
         this.altitude = DEFAULT_ALTITUDE;
-        this.waypointMarkerOptions = new MarkerOptions().position(location).title("Point " + Integer.toString(id)).snippet("Altitude: " + Float.toString(altitude) + " m");
+        this.waypointMarkerOptions = new MarkerOptions().position(location).title("Point " + Integer.toString(id));
         this.actionLinkedList = new LinkedList<>();
         this.heading = DEFAULT_HEADING;
         this.gimbalPitch = DEFAULT_GIMBALPITCH;
@@ -76,7 +76,7 @@ public class MyWaypoint implements Serializable {
 
     public void setAltitude(float inAltitude) {
         this.altitude = inAltitude;
-        this.waypointMarkerOptions = waypointMarkerOptions.snippet("Altitude: " + Float.toString(altitude) + " m");
+//        this.waypointMarkerOptions = waypointMarkerOptions.snippet("Altitude: " + Float.toString(altitude) + " m");
     }
 
     public float getAltitude() {

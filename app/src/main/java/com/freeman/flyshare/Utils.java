@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class Utils {
     public static final double ONE_METER_OFFSET = 0.00000899322;
@@ -136,7 +137,7 @@ public class Utils {
     }
 
     public static boolean deleteMission(Activity activity, int missionID, String fileName) {
-//        activity.deleteFile(fileName);
+        activity.deleteFile(fileName);
         SQLHelper helper = new SQLHelper(activity);
         SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
         int numRow = sqLiteDatabase.delete(MISSION_TABLE, MISSION_ID + "=" + Integer.toString(missionID), null);
@@ -144,17 +145,34 @@ public class Utils {
         return numRow > 0;
     }
 
-    public static boolean uploadMission(Activity activity, MyWaypointMission mission, String fileName)
-    {
+    public static boolean uploadMission(Activity activity, MyWaypointMission mission, String fileName) {
         SQLHelper helper = new SQLHelper(activity);
         SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(ONLINE_MISSION_TABLE, mission.missionName);
-        contentValues.put(ONLINE_MISSION_TABLE, mission.missionDescription);
-        contentValues.put(ONLINE_MISSION_TABLE, fileName);
+        contentValues.put(MISSION_NAME, mission.missionName);
+        contentValues.put(MISSION_DESC, mission.missionDescription);
+        contentValues.put(MISSION_FILE_NAME, fileName);
         long id = sqLiteDatabase.insert(ONLINE_MISSION_TABLE, null, contentValues);
         sqLiteDatabase.close();
+        new waitThread(activity).run();
         return id > 0;
+    }
+
+    static class waitThread extends Thread {
+        private Activity act;
+        public waitThread(Activity activity) {
+            act = activity;
+        }
+
+        public void run() {
+            long time = 3000 + (long) Math.random() * 2000;
+            try {
+                sleep(time);
+            } catch (InterruptedException e) {
+
+            }
+            Utils.setResultToToast(act, "Timeout!");
+        }
     }
 
     public static boolean downloadMission(Activity activity, MyWaypointMission mission) {
@@ -205,7 +223,7 @@ public class Utils {
             Log.e("Utils", "Fail to save mission!2 " + e.getMessage());
             e.printStackTrace();
         }
-
+//        Utils.setResultToToast(activity,"3Name: " + mission.missionName + "\n3Desc: " + mission.missionDescription);
         SQLHelper helper = new SQLHelper(activity);
         SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -270,7 +288,6 @@ public class Utils {
             }
         }
     }
-
 
 
 }
