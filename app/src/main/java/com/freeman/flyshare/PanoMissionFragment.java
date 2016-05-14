@@ -52,6 +52,7 @@ public class PanoMissionFragment extends MissionFragment {
         switch (panoChoise) {
             case 0:
                 DJIWaypoint waypoint0 = new DJIWaypoint(mLat, mLng, (float) mAltitude);
+                waypoint0.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, 0));
                 for (int i = 0; i < 7; i++) {
                     int missionHeading = (int) (droneHeading + i * 30);
                     if (missionHeading > 180)
@@ -64,6 +65,7 @@ public class PanoMissionFragment extends MissionFragment {
                 break;
             case 1:
                 DJIWaypoint waypoint1 = new DJIWaypoint(mLat, mLng, (float) mAltitude);
+                waypoint1.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch, 0));
                 DJIWaypoint waypoint2 = new DJIWaypoint(mLat, mLng - distanceShift * Utils.ONE_METER_OFFSET, (float) (mAltitude));
                 for (int i = 0; i < 13; i++) {
                     int missionHeading = -180 + i * 30;

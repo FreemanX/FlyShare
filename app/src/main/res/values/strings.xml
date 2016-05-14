@@ -36,13 +36,12 @@
     </string-array>
 
     <string name="app_instruction">
-        Read me: \n
-        1. Users take their onw risk of using this APP\n
-        2. Please check the surrounding environment for safety flight\n
-        3. Ensure you are in an open area suitable for control and your aircraft has a 100 degree clearance.\n
+        1. Users take their onw risks of using this APP.\n
+        2. Please check the surrounding environment for safety flight.\n
+        3. Ensure you are in an open area suitable for control and your aircraft has a at least 100-degree clearance.\n
         4. Even though this APP provide auto flying function, it is highly recommended to keep the drone in sight.\n
         5. If any accident happen when using smart functions, switch to program GPS mode immediately.\n
-        6. To be safe, all smart functions of this APP will be disabled if the altitude is less than 5 meters.
+        6. To be safe, all smart functions of this APP will be disabled if the altitude is lower than 5 meters.
     </string>
 
     <!-- TODO: Remove or change this placeholder text -->
