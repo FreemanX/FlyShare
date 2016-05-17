@@ -46,6 +46,7 @@
             android:background="@android:color/darker_gray" />
 
         <Button
+            android:visibility="gone"
             android:id="@+id/download_mission_button"
             android:layout_width="160dp"
             android:layout_height="wrap_content"

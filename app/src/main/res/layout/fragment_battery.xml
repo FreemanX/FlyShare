@@ -48,7 +48,7 @@
                 android:layout_marginTop="10dp"
                 android:background="#c6565656"
                 android:progress="0"
-                android:progressTint="@color/wallet_secondary_text_holo_dark" />
+                android:progressTint="@color/colorGreen" />
 
             <TextView
                 android:id="@+id/battery_power_textView"
@@ -90,7 +90,7 @@
                 android:layout_marginTop="10dp"
                 android:background="#c6565656"
                 android:progress="0"
-                android:progressTint="@color/colorGreen" />
+                android:progressTint="#66ccff" />
 
             <TextView
                 android:id="@+id/battery_life_textView"
@@ -156,7 +156,7 @@
             android:background="#c6565656"
             android:maxHeight="20dp"
             android:minHeight="20dp"
-            android:progressTint="@color/colorAccent" />
+            android:progressTint="#ffff66" />
 
     </LinearLayout>
 

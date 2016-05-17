@@ -16,10 +16,10 @@
             android:id="@+id/local_mission_name_textView"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
             android:text="Mission Name"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="#daffffff"
-            android:layout_marginLeft="5dp" />
+            android:textColor="#daffffff" />
 
         <Button
             android:id="@+id/upload_mission_button"
@@ -27,10 +27,11 @@
             android:layout_width="100dp"
             android:layout_height="40dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
             android:background="#000c79"
             android:text="Upload"
             android:textColor="#e4ffffff"
-            android:layout_marginTop="5dp" />
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
@@ -45,10 +46,10 @@
             android:id="@+id/local_mission_desc_textView"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
             android:text="Local mission description"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#daffffff"
-            android:layout_marginLeft="5dp" />
+            android:textColor="#daffffff" />
 
         <Button
             android:id="@+id/delete_mission_button"
@@ -56,11 +57,11 @@
             android:layout_width="100dp"
             android:layout_height="30dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
             android:allowUndo="false"
             android:background="#ed9a0000"
             android:text="Delete"
-            android:textColor="#e4ffffff"
-            android:layout_marginTop="10dp" />
+            android:textColor="#e4ffffff" />
     </LinearLayout>
 
     <View

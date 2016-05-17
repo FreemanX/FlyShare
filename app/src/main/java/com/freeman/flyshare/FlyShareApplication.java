@@ -99,7 +99,6 @@ public class FlyShareApplication extends Application {
     }
 
     private Runnable updateRunnable = new Runnable() {
-
         @Override
         public void run() {
             Intent intent = new Intent(FLAG_CONNECTION_CHANGE);

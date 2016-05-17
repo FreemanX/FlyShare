@@ -80,10 +80,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private AbleToHandleMarkerOnMap googleMapFragment;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
     private GoogleApiClient client;
 
     private void requestPreconditionHandler() {
@@ -305,9 +301,8 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (mProduct != null) {
             if (mProduct.isConnected()) {
                 connectionTV.setTextColor(getResources().getColor(R.color.colorGreen));
-                connectionTV.setText(mProduct.getModel().toString());
+                connectionTV.setText(mProduct.getModel().toString().replace("_", " "));
                 updateFlightControllerStatus();
-//                showMapFragment();
                 isConnected = true;
             }
         }
@@ -315,9 +310,6 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         if (!isConnected) {
             connectionTV.setTextColor(getResources().getColor(R.color.colorAccent));
             connectionTV.setText("Disconnected");
-//            fragmentManager.beginTransaction().remove(fragmentManager.findFragmentByTag(GoogleMapsFragment.class.getName())).commit();
-//            this.finish();
-//            System.exit(0);
         }
         return isConnected;
     }

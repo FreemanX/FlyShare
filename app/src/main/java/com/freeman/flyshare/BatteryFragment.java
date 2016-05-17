@@ -68,7 +68,8 @@ public class BatteryFragment extends Fragment {
                     FlyShareApplication.getProductInstance().getBattery().setSelfDischargeDay(numOfDays, new DJIBaseComponent.DJICompletionCallback() {
                         @Override
                         public void onResult(DJIError djiError) {
-                            Log.e("BatteryFragment", "Set discharge day fails: " + djiError.getDescription());
+                            if (djiError != null)
+                                Log.e("BatteryFragment", "Set discharge day fails: " + djiError.getDescription());
                         }
                     });
             }
@@ -140,6 +141,7 @@ public class BatteryFragment extends Fragment {
 
     private boolean isReady() {
         return FlyShareApplication.getProductInstance() != null
+                && FlyShareApplication.getProductInstance().getBattery() != null
                 && FlyShareApplication.getProductInstance().getBattery().isConnected()
                 && FlyShareApplication.getProductInstance().getBattery().isSmartBattery();
     }

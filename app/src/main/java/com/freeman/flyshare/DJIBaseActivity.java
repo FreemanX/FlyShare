@@ -1,15 +1,22 @@
 package com.freeman.flyshare;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,8 +24,11 @@ import dji.sdk.Products.DJIAircraft;
 import dji.sdk.base.DJIBaseProduct;
 
 
-public class DJIBaseActivity extends Activity {
+public class DJIBaseActivity extends AppCompatActivity {
 
+    private BatteryFragment batteryFragment;
+    private SDCardFragment mSDCardFragment;
+    private RemoteControllerFragment mRCFragment;
     private static DJIBaseProduct mProduct = null;
     private Button confirm;
     private TextView typeTV;
@@ -26,7 +36,6 @@ public class DJIBaseActivity extends Activity {
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.e("DJIBaseAcitvity", "==========================>>> receive broadcast message!");
             changeConnectionStatus();
         }
     };
@@ -38,20 +47,38 @@ public class DJIBaseActivity extends Activity {
         if (!productIsNull) {
             Log.e("ChangeConnectionStatus", "=======>>> mProduct is connected " + mProduct.isConnected());
             if (mProduct.isConnected()) {
-                typeTV.setText("Connect to " + mProduct.getModel());
+                typeTV.setTextColor(Color.GREEN);
+                typeTV.setText("Connect to " + mProduct.getModel().toString().replace("_", " "));
                 connectToSth = true;
+                confirm.setVisibility(View.VISIBLE);
             } else {
                 if (mProduct instanceof DJIAircraft) {
                     DJIAircraft aircraft = (DJIAircraft) mProduct;
                     if (aircraft.getRemoteController() != null && aircraft.getRemoteController().isConnected()) {
+                        typeTV.setTextColor(Color.BLUE);
                         typeTV.setText("Connect to RC only");
+                        confirm.setVisibility(View.GONE);
                         connectToSth = true;
                     }
                 }
             }
         }
-        if (!connectToSth)
+        if (!connectToSth) {
+            confirm.setVisibility(View.GONE);
+            typeTV.setTextColor(Color.GRAY);
             typeTV.setText("Not connected...");
+        }
+
+        batteryFragment = BatteryFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().replace(R.id.battery_container_LinearLayout, batteryFragment, BatteryFragment.class.getName()).commit();
+        mSDCardFragment = SDCardFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.SD_card_container_LinearLayout, mSDCardFragment, SDCardFragment.class.getName())
+                .commit();
+        mRCFragment = RemoteControllerFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.RC_container_LinearLayout, mRCFragment, RemoteControllerFragment.class.getName())
+                .commit();
 
         Log.e("ChangeConnectionStatus", "=======>>> mProduct is null: " + productIsNull);
     }
@@ -68,7 +95,6 @@ public class DJIBaseActivity extends Activity {
         registerReceiver(mReceiver, intentFilter);
 
         confirm = (Button) findViewById(R.id.confirmTypeBtn);
-        confirm.setVisibility(View.VISIBLE);
         typeTV = (TextView) findViewById(R.id.typeTV);
 
         changeConnectionStatus();
@@ -89,6 +115,20 @@ public class DJIBaseActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        LinearLayout appIntroLinearLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.app_introduction_layout, null);
+        Rect displayRectangle = new Rect();
+        Window window = this.getWindow();
+        window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
+        appIntroLinearLayout.setMinimumWidth((int) (displayRectangle.width() * 0.9f));
+        appIntroLinearLayout.setMinimumHeight((int) (displayRectangle.height() * 0.9f));
+        new AlertDialog.Builder(this)
+                .setView(appIntroLinearLayout)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).create().show();
     }
 
     @Override

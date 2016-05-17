@@ -1,5 +1,6 @@
 package com.freeman.flyshare;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -20,6 +21,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     WeatherFragment weatherFragment;
     LocalMissionFragment localMissionFragment;
+    Activity mainActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,15 +29,14 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        mainActivity = this;
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         final Intent startFPV = new Intent(this, DJIBaseActivity.class);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
                 startActivity(startFPV);
+                mainActivity.finish();
             }
         });
 
@@ -47,16 +48,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-
-        weatherFragment = WeatherFragment.newInstance();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.weather_linearLayout, weatherFragment, WeatherFragment.class.getName())
-                .commit();
-        localMissionFragment = LocalMissionFragment.newInstance();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.mission_linearLayout, localMissionFragment, LocalMissionFragment.class.getName())
-                .commit();
 
     }
 
@@ -112,6 +103,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
+        weatherFragment = WeatherFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.weather_linearLayout, weatherFragment, WeatherFragment.class.getName())
+                .commit();
+        localMissionFragment = LocalMissionFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.mission_linearLayout, localMissionFragment, LocalMissionFragment.class.getName())
+                .commit();
     }
 
 }

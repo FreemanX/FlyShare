@@ -26,6 +26,17 @@
         <item>Stay</item>
     </string-array>
 
+    <string-array name="lb_link_channels">
+        <item>Channel 1</item>
+        <item>Channel 2</item>
+        <item>Channel 3</item>
+        <item>Channel 4</item>
+        <item>Channel 5</item>
+        <item>Channel 6</item>
+        <item>Channel 7</item>
+        <item>Channel 8</item>
+    </string-array>
+
     <string-array name="waypoint_action_type_description">
         <item>Parameter range: [-90, 0] degrees. Default: 0</item>
         <item>Parameter range: [-180, 180] degrees. Default: 0</item>
@@ -36,10 +47,11 @@
     </string-array>
 
     <string name="app_instruction">
+        \n
         1. Users take their onw risks of using this APP.\n
         2. Please check the surrounding environment for safety flight.\n
-        3. Ensure you are in an open area suitable for control and your aircraft has a at least 100-degree clearance.\n
-        4. Even though this APP provide auto flying function, it is highly recommended to keep the drone in sight.\n
+        3. Ensure you are in an open area and your aircraft has a at least 100-degree clearance.\n
+        4. Although this APP has auto flying functions, it is highly recommended keeping the drone in sight.\n
         5. If any accident happen when using smart functions, switch to program GPS mode immediately.\n
         6. To be safe, all smart functions of this APP will be disabled if the altitude is lower than 5 meters.
     </string>

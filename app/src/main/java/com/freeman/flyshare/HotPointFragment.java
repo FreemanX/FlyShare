@@ -245,7 +245,7 @@ public class HotPointFragment extends MissionFragment {
 
     private void initSelectHeadingUI() {
         selectHeadingSpinner = (Spinner) mView.findViewById(R.id.select_heading_spinner);
-        ArrayAdapter headingItemsArrayAdapter = ArrayAdapter.createFromResource(getContext(), R.array.hotpoint_heading, R.layout.support_simple_spinner_dropdown_item);
+        ArrayAdapter headingItemsArrayAdapter = ArrayAdapter.createFromResource(getContext(), R.array.hotpoint_heading, R.layout.single_line_layout);
         selectHeadingSpinner.setAdapter(headingItemsArrayAdapter);
         selectHeadingSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
