@@ -223,7 +223,7 @@ public class Utils {
             Log.e("Utils", "Fail to save mission!2 " + e.getMessage());
             e.printStackTrace();
         }
-//        Utils.setResultToToast(activity,"3Name: " + mission.missionName + "\n3Desc: " + mission.missionDescription);
+
         SQLHelper helper = new SQLHelper(activity);
         SQLiteDatabase sqLiteDatabase = helper.getWritableDatabase();
         ContentValues contentValues = new ContentValues();

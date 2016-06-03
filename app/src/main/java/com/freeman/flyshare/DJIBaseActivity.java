@@ -1,6 +1,5 @@
 package com.freeman.flyshare;
 
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -57,14 +56,14 @@ public class DJIBaseActivity extends AppCompatActivity {
                     if (aircraft.getRemoteController() != null && aircraft.getRemoteController().isConnected()) {
                         typeTV.setTextColor(Color.BLUE);
                         typeTV.setText("Connect to RC only");
-                        confirm.setVisibility(View.GONE);
+//                        confirm.setVisibility(View.GONE); //TODO comment out for debugging
                         connectToSth = true;
                     }
                 }
             }
         }
         if (!connectToSth) {
-            confirm.setVisibility(View.GONE);
+//            confirm.setVisibility(View.GONE); //TODO comment out for debugging
             typeTV.setTextColor(Color.GRAY);
             typeTV.setText("Not connected...");
         }
@@ -90,9 +89,9 @@ public class DJIBaseActivity extends AppCompatActivity {
 
 
         final Intent FPVActivity = new Intent(this, com.freeman.flyshare.FPVActivity.class);
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
-        registerReceiver(mReceiver, intentFilter);
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
+//        registerReceiver(mReceiver, intentFilter);
 
         confirm = (Button) findViewById(R.id.confirmTypeBtn);
         typeTV = (TextView) findViewById(R.id.typeTV);
@@ -104,7 +103,6 @@ public class DJIBaseActivity extends AppCompatActivity {
                 mProduct = FlyShareApplication.getProductInstance();
                 if (true || mProduct != null) { // Debug: add always true condition here
                     startActivity(FPVActivity);
-                    finish();
                 } else
                     Toast.makeText(getApplicationContext(), "You are not connecting to drone!", Toast.LENGTH_SHORT).show();
             }
@@ -112,23 +110,34 @@ public class DJIBaseActivity extends AppCompatActivity {
 
     }
 
+    private boolean hasShown = false;
+
     @Override
     public void onResume() {
         super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(FlyShareApplication.FLAG_CONNECTION_CHANGE);
+        registerReceiver(mReceiver, intentFilter);
+
         LinearLayout appIntroLinearLayout = (LinearLayout) getLayoutInflater().inflate(R.layout.app_introduction_layout, null);
         Rect displayRectangle = new Rect();
         Window window = this.getWindow();
         window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
         appIntroLinearLayout.setMinimumWidth((int) (displayRectangle.width() * 0.9f));
         appIntroLinearLayout.setMinimumHeight((int) (displayRectangle.height() * 0.9f));
-        new AlertDialog.Builder(this)
-                .setView(appIntroLinearLayout)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                }).create().show();
+        if (!hasShown) {
+            new AlertDialog.Builder(this)
+                    .setView(appIntroLinearLayout)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).create().show();
+            hasShown = true;
+        }
+        changeConnectionStatus();
     }
 
     @Override
@@ -138,13 +147,14 @@ public class DJIBaseActivity extends AppCompatActivity {
 
     @Override
     public void onStop() {
+        unregisterReceiver(mReceiver);
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
+//        unregisterReceiver(mReceiver);
     }
 
 }

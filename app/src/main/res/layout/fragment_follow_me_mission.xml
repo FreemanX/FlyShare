@@ -21,23 +21,6 @@
             android:textSize="22dp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/progress_bar_textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="Progress"
-            android:textColor="#f3d0d0d0"
-            android:textStyle="bold" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp" />
-
         <ScrollView
             android:id="@+id/scrollView"
             android:layout_width="match_parent"

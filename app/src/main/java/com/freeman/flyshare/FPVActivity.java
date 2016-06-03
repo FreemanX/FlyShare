@@ -1,5 +1,6 @@
 package com.freeman.flyshare;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,6 +23,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -475,7 +477,8 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void initCameraFunctions() {
-
+        intervalPhotoProgressBar = (ProgressBar) findViewById(R.id.interval_photo_progressBar);
+        intervalPhotoProgressBar.setVisibility(View.GONE);
         camFunctionsLayout = (LinearLayout) findViewById(R.id.cameraFunctions);
         changeCamModeIB = (ImageButton) findViewById(R.id.camera_mode_imageButton);
         changeCamModeIB.setOnClickListener(this);
@@ -498,7 +501,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         camSettingIB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showToast("Camera Config clicked");
+//                showToast("Camera Config clicked");
                 if (!cameraConfigIsShow && !cameraSettingIsShow)
                     showCameraConfig();
                 else
@@ -526,7 +529,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         Log.e("FPVActivity", "===================================> click sth");
         switch (v.getId()) {
             case R.id.camera_mode_imageButton:
-                showToast("Camera mode image button clicked!");
+//                showToast("Camera mode image button clicked!");
                 if (isPhotoMode) {
                     setShootPhotoMode(1);
                 } else {
@@ -809,8 +812,28 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         });
     }
 
+    private ProgressDialog mProgressDialog;
+
+    private void showProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.cancel();
+        }
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.cancel();
+        }
+    }
+
+    private ProgressBar intervalPhotoProgressBar;
+
     private void captureAction() {
         mCamera = mProduct.getCamera();
+        showProgressDialog();
         if (!isTakingIntervalPhoto)
             mCamera.setCameraMode(cameraMode, new DJICompletionCallback() {
                 @Override
@@ -824,9 +847,16 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                                     if (shootPhotoMode == CameraShootPhotoMode.Interval) {
                                         isTakingIntervalPhoto = true;
                                         showToast("Taking interval photos!");
-                                        return;
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                intervalPhotoProgressBar.setVisibility(View.VISIBLE);
+                                            }
+                                        });
+                                    } else {
+                                        showToast("Take photo success");
+                                        intervalPhotoProgressBar.setVisibility(View.GONE);
                                     }
-                                    showToast("Take photo success");
                                 } else
                                     showToast(djiError.getDescription());
                             }
@@ -835,6 +865,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                     {
                         showToast(djiError.getDescription());
                     }
+                    hideProgressDialog();
                 }
             });
         else
@@ -844,7 +875,17 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
                     if (djiError == null) {
                         showToast("Stop taking interval photos!");
                         isTakingIntervalPhoto = false;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                intervalPhotoProgressBar.setVisibility(View.GONE);
+                            }
+                        });
+                    } else // if set camera mode fail
+                    {
+                        showToast(djiError.getDescription());
                     }
+                    hideProgressDialog();
                 }
             });
 
@@ -895,8 +936,18 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
     public void onStop() {
         Log.e(TAG, "==================>> onStop");
         mTimer.cancel();
-
+        if (mProduct != null && mProduct.getBattery() != null)
+            mProduct.getBattery().setBatteryStateUpdateCallback(null);
         unregisterReceiver(mReceiver);
+        if (mProduct != null && mProduct.getCamera() != null) {
+            mProduct.getCamera().stopShootPhoto(new DJICompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+
+                }
+            });
+            stopRecord();
+        }
         super.onStop();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -914,6 +965,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.disconnect();
+
     }
 
     @Override
@@ -951,8 +1003,7 @@ public class FPVActivity extends AppCompatActivity implements View.OnClickListen
             Log.d(TAG, "onKeyDown KEYCODE_BACK");
             if (first) {
                 first = false;
-                finish();
-                System.exit(0);
+                this.finish();
             } else {
                 first = true;
                 Toast.makeText(FPVActivity.this, getText(R.string.press_again_exit), Toast.LENGTH_SHORT).show();

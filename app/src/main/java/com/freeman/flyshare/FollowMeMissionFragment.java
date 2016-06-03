@@ -139,8 +139,6 @@ public final class FollowMeMissionFragment extends MissionFragment implements
             Log.e("new update Object", "________________object created");
             this.mHomeLatitude = homeLat;
             this.mHomeLongitude = homeLng;
-
-
         }
 
         @Override
@@ -155,6 +153,7 @@ public final class FollowMeMissionFragment extends MissionFragment implements
 
             while (mIsRunning) {
                 if (!mIsPausing) {
+
                     Log.e("onLocationChanged", "Lat: " + Double.toString(tarPosLat) + ", Lng: " + Double.toString(tarPosLon));
                     DJIFollowMeMission.updateFollowMeCoordinate(
                             Utils.Degree(tarPosLat), Utils.Degree(tarPosLon), new DJIBaseComponent.DJICompletionCallback() {

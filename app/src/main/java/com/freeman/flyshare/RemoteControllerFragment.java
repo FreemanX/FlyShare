@@ -38,7 +38,9 @@ public class RemoteControllerFragment extends Fragment {
     private boolean isReady() {
         return FlyShareApplication.getProductInstance() != null
                 && FlyShareApplication.getProductInstance() instanceof DJIAircraft
-                && ((DJIAircraft) FlyShareApplication.getProductInstance()).getRemoteController() != null;
+                && ((DJIAircraft) FlyShareApplication.getProductInstance()).getRemoteController() != null
+                && FlyShareApplication.getProductInstance().getAirLink() != null
+                && FlyShareApplication.getProductInstance().getAirLink().getLBAirLink() != null;
     }
 
     @Override
@@ -88,8 +90,9 @@ public class RemoteControllerFragment extends Fragment {
                     fragmentActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            int channel = -(integer + 1);
-                            channelSpinner.setSelection(channel);
+                            int position = Math.abs(integer) - 1;
+//                            Utils.setResultToToast(fragmentActivity, "Initial channel: " + Integer.toString(position));
+                            channelSpinner.setSelection(position);
                         }
                     });
                 }
@@ -123,9 +126,8 @@ public class RemoteControllerFragment extends Fragment {
                                             fragmentActivity.runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    int channel = -(integer + 1);
-
-                                                    channelSpinner.setSelection(channel);
+                                                    int position = Math.abs(integer) - 1;
+                                                    channelSpinner.setSelection(position);
                                                 }
                                             });
                                         }
@@ -161,12 +163,14 @@ public class RemoteControllerFragment extends Fragment {
 
             channelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                public void onItemSelected(AdapterView<?> parent, View view, final int position, long id) {
                     FlyShareApplication.getProductInstance().getAirLink().getLBAirLink().setChannel(position + 1, new DJIBaseComponent.DJICompletionCallback() {
                         @Override
                         public void onResult(DJIError djiError) {
                             if (djiError != null)
                                 Utils.setResultToToast(fragmentActivity, "Set channel mode failed: " + djiError.getDescription());
+//                            else
+//                                Utils.setResultToToast(fragmentActivity, "Set channel " + Integer.toString(position + 1) + " success");
                         }
                     });
                 }

@@ -42,6 +42,7 @@ public class MissionSelectionFragment extends Fragment implements View.OnClickLi
         View view = inflater.inflate(R.layout.fragment_mission_selection, container, false);
 
         followMeButton = (Button) view.findViewById(R.id.follow_me_button);
+        followMeButton.setVisibility(View.GONE); //TODO follow me mission has some bugs, need to be tuned
         hotPointButton = (Button) view.findViewById(R.id.hot_point_button);
         panoramaButton = (Button) view.findViewById(R.id.panorama_button);
         yourMissionButton = (Button) view.findViewById(R.id.waypoint_button);

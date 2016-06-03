@@ -100,6 +100,19 @@ public class BatteryFragment extends Fragment {
         initBatteryPower();
         initBatteryTemperature();
         initNumOfDischargeDay();
+        return mView;
+    }
+
+    private boolean isReady() {
+        return FlyShareApplication.getProductInstance() != null
+                && FlyShareApplication.getProductInstance().getBattery() != null
+                && FlyShareApplication.getProductInstance().getBattery().isConnected()
+                && FlyShareApplication.getProductInstance().getBattery().isSmartBattery();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         if (isReady())
             FlyShareApplication.getProductInstance().getBattery().setBatteryStateUpdateCallback(new DJIBattery.DJIBatteryStateUpdateCallback() {
                 @Override
@@ -136,14 +149,13 @@ public class BatteryFragment extends Fragment {
 
                 }
             });
-        return mView;
     }
 
-    private boolean isReady() {
-        return FlyShareApplication.getProductInstance() != null
-                && FlyShareApplication.getProductInstance().getBattery() != null
-                && FlyShareApplication.getProductInstance().getBattery().isConnected()
-                && FlyShareApplication.getProductInstance().getBattery().isSmartBattery();
+    @Override
+    public void onStop() {
+        if (FlyShareApplication.getProductInstance() != null && FlyShareApplication.getProductInstance().getBattery() != null)
+            FlyShareApplication.getProductInstance().getBattery().setBatteryStateUpdateCallback(null);
+        super.onStop();
     }
 
     @Override

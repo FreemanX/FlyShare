@@ -58,7 +58,6 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
         mView = inflater.inflate(R.layout.fragment_wether, container, false);
         mYahooWeather.setExceptionListener(this);
         fragmentActivity = getActivity();
-        searchByGPS();
         weatherImageView = (ImageView) mView.findViewById(R.id.weather_imageView);
         dateTextView = (TextView) mView.findViewById(R.id.date_textView);
         weatherTextView = (TextView) mView.findViewById(R.id.weather_textView);
@@ -107,6 +106,7 @@ public class WeatherFragment extends Fragment implements YahooWeatherExceptionLi
 
     @Override
     public void onResume() {
+        searchByGPS();
         super.onResume();
     }
 

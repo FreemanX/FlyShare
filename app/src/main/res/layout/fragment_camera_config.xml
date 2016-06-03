@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
-        android:background="#4f000001"
+        android:background="#b7000001"
         android:orientation="vertical">
 
         <TextView
